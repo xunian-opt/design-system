@@ -1,1048 +1,284 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>员工信息管理 - 装修公司管理系统</title>
-  
+  <meta charset="UTF-8">
+  <title>员工信息管理</title>
+  <script src="navbar.js"></script>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft YaHei", sans-serif;
-      background: #f0f2f5;
-      min-height: 100vh;
-    }
-    
-    /* 顶部导航栏 */
-    .top-bar {
-      height: 60px;
-      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 24px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 1000;
-    }
-    
-    .top-bar h1 {
-      font-size: 20px;
-      font-weight: 600;
-    }
-    
-    .user-info {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 14px;
-    }
-    
-    .user-info button {
-      padding: 6px 16px;
-      background: rgba(255,255,255,0.2);
-      border: 1px solid rgba(255,255,255,0.3);
-      color: white;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-    
-    .user-info button:hover {
-      background: rgba(255,255,255,0.3);
-    }
-    
-    /* 主容器 */
-    .main-container {
-      display: flex;
-      margin-top: 60px;
-      min-height: calc(100vh - 60px);
-    }
-    
-    /* 侧边栏 */
-    .sidebar {
-      width: 220px;
-      background: #001529;
-      color: white;
-      flex-shrink: 0;
-      overflow-y: auto;
-    }
-    
-    .menu-item {
-      padding: 16px 24px;
-      cursor: pointer;
-      transition: all 0.3s;
-      border-left: 3px solid transparent;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 14px;
-    }
-    
-    .menu-item:hover {
-      background: rgba(255,255,255,0.1);
-    }
-    
-    .menu-item.active {
-      background: #1890ff;
-      border-left-color: #40a9ff;
-    }
-    
-    .menu-item .icon {
-      width: 16px;
-      height: 16px;
-      display: inline-block;
-    }
-    
-    .menu-group {
-      margin-top: 8px;
-    }
-    
-    .menu-group-title {
-      padding: 16px 24px 8px;
-      font-size: 12px;
-      color: rgba(255,255,255,0.5);
-      text-transform: uppercase;
-    }
-    
-    .submenu {
-      padding-left: 48px;
-    }
-    
-    /* 主内容区 */
-    .content {
-      flex: 1;
-      padding: 24px;
-      overflow-y: auto;
-    }
-    
-    /* 面包屑 */
-    .breadcrumb {
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 14px;
-      color: #666;
-    }
-    
-    .breadcrumb span {
-      color: #1890ff;
-    }
-    
-    /* 内容卡片 */
-    .content-card {
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      padding: 24px;
-    }
-    
-    /* 搜索栏 */
-    .search-bar {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-      align-items: flex-end;
-    }
-    
-    .search-field {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    
-    .search-field label {
-      font-size: 14px;
-      color: #333;
-    }
-    
-    .search-field input {
-      padding: 8px 12px;
-      border: 1px solid #d9d9d9;
-      border-radius: 4px;
-      font-size: 14px;
-      width: 200px;
-      outline: none;
-      transition: all 0.3s;
-    }
-    
-    .search-field input:focus {
-      border-color: #1890ff;
-      box-shadow: 0 0 0 2px rgba(24,144,255,0.1);
-    }
-    
-    /* 工具栏 */
-    .toolbar {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-    
-    .btn {
-      padding: 8px 16px;
-      border: none;
-      border-radius: 4px;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.3s;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    
-    .btn-primary {
-      background: #1890ff;
-      color: white;
-    }
-    
-    .btn-primary:hover {
-      background: #40a9ff;
-    }
-    
-    .btn-danger {
-      background: #ff4d4f;
-      color: white;
-    }
-    
-    .btn-danger:hover {
-      background: #ff7875;
-    }
-    
-    .btn-search {
-      background: #1890ff;
-      color: white;
-      margin-top: 24px;
-    }
-    
-    /* 表格 */
-    .table-container {
-      overflow-x: auto;
-      margin-bottom: 20px;
-    }
-    
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 14px;
-    }
-    
-    thead {
-      background: #fafafa;
-    }
-    
-    th {
-      padding: 12px 16px;
-      text-align: left;
-      font-weight: 600;
-      color: #333;
-      border-bottom: 1px solid #f0f0f0;
-      white-space: nowrap;
-    }
-    
-    td {
-      padding: 12px 16px;
-      border-bottom: 1px solid #f0f0f0;
-      color: #666;
-    }
-    
-    tbody tr {
-      transition: background 0.3s;
-    }
-    
-    tbody tr:hover {
-      background: #fafafa;
-    }
-    
-    .avatar {
-      width: 50px;
-      height: 50px;
-      border-radius: 4px;
-      object-fit: cover;
-    }
-    
-    .action-btns {
-      display: flex;
-      gap: 8px;
-    }
-    
-    .btn-sm {
-      padding: 4px 12px;
-      font-size: 13px;
-    }
-    
-    .btn-success {
-      background: #52c41a;
-      color: white;
-    }
-    
-    .btn-success:hover {
-      background: #73d13d;
-    }
-    
-    .btn-info {
-      background: #1890ff;
-      color: white;
-    }
-    
-    .btn-info:hover {
-      background: #40a9ff;
-    }
-    
-    /* 分页 */
-    .pagination {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 12px;
-      margin-top: 20px;
-    }
-    
-    .pagination button {
-      padding: 6px 12px;
-      border: 1px solid #d9d9d9;
-      background: white;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-    
-    .pagination button:hover:not(:disabled) {
-      border-color: #1890ff;
-      color: #1890ff;
-    }
-    
-    .pagination button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    
-    .page-info {
-      color: #666;
-      font-size: 14px;
-    }
-    
-    /* 消息提示 */
-    .msg {
-      padding: 12px 16px;
-      border-radius: 4px;
-      margin-bottom: 16px;
-      font-size: 14px;
-      display: none;
-    }
-    
-    .msg.show {
-      display: block;
-      animation: fadeIn 0.3s;
-    }
-    
-    .msg.error {
-      background: #fff1f0;
-      border: 1px solid #ffccc7;
-      color: #cf1322;
-    }
-    
-    .msg.success {
-      background: #f6ffed;
-      border: 1px solid #b7eb8f;
-      color: #389e0d;
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    
-    /* 复选框 */
-    input[type="checkbox"] {
-      width: 16px;
-      height: 16px;
-      cursor: pointer;
-    }
-    
-    /* 模态框 */
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
-      z-index: 2000;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .modal.show {
-      display: flex;
-    }
-    
-    .modal-content {
-      background: white;
-      border-radius: 8px;
-      width: 90%;
-      max-width: 700px;
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-    
-    .modal-header {
-      padding: 20px 30px;
-      border-bottom: 1px solid #e5e7eb;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    
-    .modal-header h3 {
-      font-size: 18px;
-      color: #111827;
-    }
-    
-    .modal-close {
-      background: none;
-      border: none;
-      font-size: 24px;
-      cursor: pointer;
-      color: #6b7280;
-      padding: 0;
-      width: 30px;
-      height: 30px;
-    }
-    
-    .modal-body {
-      padding: 30px;
-    }
-    
-    .modal-form {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
-    }
-    
-    .modal-form .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    
-    .modal-form .form-group.full-width {
-      grid-column: 1 / -1;
-    }
-    
-    .modal-form label {
-      font-size: 14px;
-      color: #333;
-    }
-    
-    .modal-form input,
-    .modal-form select {
-      padding: 8px 12px;
-      border: 1px solid #d9d9d9;
-      border-radius: 4px;
-      font-size: 14px;
-      outline: none;
-    }
-    
-    .modal-form input:focus,
-    .modal-form select:focus {
-      border-color: #1890ff;
-      box-shadow: 0 0 0 2px rgba(24,144,255,0.1);
-    }
-    
-    .modal-footer {
-      padding: 20px 30px;
-      border-top: 1px solid #e5e7eb;
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-    }
-    
-    .btn-cancel {
-      padding: 8px 16px;
-      border: 1px solid #d9d9d9;
-      background: white;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-    
-    .btn-cancel:hover {
-      background-color: #f3f4f6;
+    /* 全局样式统一 */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft YaHei", sans-serif; background: #f0f2f5; min-height: 100vh; }
+    
+    /* 页面特定样式 */
+    .breadcrumb { margin-bottom: 20px; color: #666; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+    .breadcrumb span { color: #1890ff; }
+    
+    .content-card { background: white; border-radius: 8px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    
+    .search-bar { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: flex-end; }
+    .search-field { display: flex; flex-direction: column; gap: 6px; }
+    .search-field label { font-size: 14px; color: #333; }
+    .search-field input { padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; outline: none; width: 200px; transition: all 0.3s; }
+    .search-field input:focus { border-color: #1890ff; box-shadow: 0 0 0 2px rgba(24,144,255,0.1); }
+    
+    .toolbar { display: flex; gap: 12px; margin-bottom: 20px; }
+    .btn { padding: 8px 16px; border-radius: 4px; border: none; color: white; cursor: pointer; font-size: 14px; transition: all 0.3s; display: inline-flex; align-items: center; justify-content: center; }
+    .btn-search { background: #1890ff; } .btn-search:hover { background: #40a9ff; }
+    .btn-danger { background: #ff4d4f; } .btn-danger:hover { background: #ff7875; }
+    .btn-primary { background: #1890ff; } .btn-primary:hover { background: #40a9ff; }
+    
+    .table-container { overflow-x: auto; margin-bottom: 20px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    thead { background: #fafafa; }
+    th { padding: 12px 16px; text-align: left; font-weight: 600; color: #333; border-bottom: 1px solid #f0f0f0; white-space: nowrap; }
+    td { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; color: #666; vertical-align: middle; }
+    tbody tr { transition: background 0.3s; }
+    tbody tr:hover { background: #fafafa; }
+    
+    .avatar { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; }
+    
+    .action-btns { display: flex; gap: 8px; }
+    .btn-sm { padding: 4px 12px; font-size: 12px; }
+    .btn-info { background: #1890ff; } .btn-info:hover { background: #40a9ff; }
+    .btn-success { background: #52c41a; } .btn-success:hover { background: #73d13d; }
+    
+    .msg { padding: 12px 16px; margin-bottom: 16px; border-radius: 4px; display: none; font-size: 14px; }
+    .msg.show { display: block; animation: fadeIn 0.3s; }
+    .msg.success { background: #f6ffed; border: 1px solid #b7eb8f; color: #389e0d; }
+    .msg.error { background: #fff1f0; border: 1px solid #ffccc7; color: #cf1322; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 20px; }
+    .pagination button { padding: 6px 12px; border: 1px solid #d9d9d9; background: white; border-radius: 4px; cursor: pointer; color: #666; transition: all 0.3s; }
+    .pagination button:hover:not(:disabled) { border-color: #1890ff; color: #1890ff; }
+    .pagination button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .page-info { color: #666; font-size: 14px; }
+    
+    /* 弹窗样式 */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; }
+    .modal.show { display: flex; }
+    .modal-content { background: white; width: 600px; border-radius: 8px; max-height: 90vh; overflow-y: auto; }
+    .modal-header { padding: 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
+    .modal-header h3 { font-size: 16px; margin: 0; color: #333; }
+    .modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: #999; }
+    .modal-body { padding: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .full-width { grid-column: 1 / -1; }
+    .form-group label { font-size: 14px; color: #333; }
+    .form-group input, .form-group select { padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; outline: none; width: 100%; }
+    .modal-footer { padding: 20px; border-top: 1px solid #f0f0f0; text-align: right; }
+    .btn-cancel { background: white; border: 1px solid #d9d9d9; color: #666; margin-right: 8px; } .btn-cancel:hover { color: #333; border-color: #999; }
+    
+    @media (max-width: 768px) {
+      .search-field input { width: 100%; }
+      .modal-content { width: 90%; }
+      .modal-body { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
-  <div class="top-bar">
-    <h1>装修公司管理系统</h1>
-    <div class="user-info">
-      <span>管理员: admin</span>
-      <button onclick="logout()">退出登录</button>
-    </div>
-  </div>
-  
   <div class="main-container">
-    <div class="sidebar">
-      <div class="menu-item" onclick="navigate('index.html')">
-        <span class="icon">🏠</span>
-        <span>系统首页</span>
-      </div>
-      
-      <div class="menu-group">
-        <div class="menu-group-title">系统管理</div>
-        <div class="menu-item" onclick="navigate('profile.html')">
-          <span class="icon">👤</span>
-          <span>个人中心</span>
-        </div>
-        <div class="menu-item" onclick="navigate('users.html')">
-          <span class="icon">👥</span>
-          <span>用户管理</span>
-        </div>
-        <div class="submenu menu-item" onclick="navigate('users.html')">
-          <span>用户</span>
-        </div>
-      </div>
-      
-      <div class="menu-group">
-        <div class="menu-group-title">业务管理</div>
-        <div class="menu-item active">
-          <span class="icon">👷</span>
-          <span>员工信息管理</span>
-        </div>
-        <div class="menu-item" onclick="navigate('gongsixinxi.html')">
-          <span class="icon">🏢</span>
-          <span>公司信息管理</span>
-        </div>
-        <div class="menu-item" onclick="navigate('category.html')">
-          <span class="icon">📦</span>
-          <span>商品分类管理</span>
-        </div>
-        <div class="menu-item" onclick="navigate('product.html')">
-          <span class="icon">🛍️</span>
-          <span>装修商品管理</span>
-        </div>
-        <div class="menu-item" onclick="navigate('work.html')">
-          <span class="icon">🎨</span>
-          <span>装修作品管理</span>
-        </div>
-        <div class="menu-item" onclick="navigate('system.html')">
-          <span class="icon">⚙️</span>
-          <span>系统管理</span>
-        </div>
-        <div class="menu-item" onclick="navigate('order.html')">
-          <span class="icon">📝</span>
-          <span>订单管理</span>
-        </div>
-      </div>
-    </div>
-    
     <div class="content">
-      <div class="breadcrumb">
-        系统首页 / <span>员工信息管理</span>
-      </div>
-      
+      <div class="breadcrumb">业务管理 / <span>员工信息管理</span></div>
       <div class="content-card">
         <div class="search-bar">
-          <div class="search-field">
-            <label>工号</label>
-            <input type="text" id="searchGonghao" placeholder="请输入工号" />
-          </div>
-          <div class="search-field">
-            <label>姓名</label>
-            <input type="text" id="searchXingming" placeholder="请输入姓名" />
-          </div>
-          <button class="btn btn-search" onclick="searchEmployees()">查询</button>
-          <button class="btn btn-danger" onclick="resetEmployeesSearch()">重置</button>
+          <div class="search-field"><label>工号</label><input type="text" id="s_code" placeholder="请输入工号"></div>
+          <div class="search-field"><label>姓名</label><input type="text" id="s_name" placeholder="请输入姓名"></div>
+          <button class="btn btn-search" onclick="search()">查询</button>
+          <button class="btn btn-danger" onclick="reset()">重置</button>
         </div>
-        
         <div class="toolbar">
           <button class="btn btn-primary" onclick="openModal('add')">新增</button>
-          <button class="btn btn-danger" onclick="batchDelete()">批量删除</button>
+          <button class="btn btn-danger" onclick="delBatch()">批量删除</button>
         </div>
-        
         <div id="msg" class="msg"></div>
-        
         <div class="table-container">
           <table>
-            <thead>
-              <tr>
-                <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll()" /></th>
-                <th>索引</th>
-                <th>工号</th>
-                <th>姓名</th>
-                <th>性别</th>
-                <th>职位</th>
-                <th>联系方式</th>
-                <th>负责项目</th>
-                <th>头像</th>
-                <th>操作</th>
-              </tr>
-            </thead>
-            <tbody id="tbody">
-              </tbody>
+            <thead><tr><th><input type="checkbox" id="selAll"></th><th>工号</th><th>姓名</th><th>性别</th><th>职位</th><th>电话</th><th>照片</th><th>操作</th></tr></thead>
+            <tbody id="tbody"></tbody>
           </table>
         </div>
-        
         <div class="pagination">
-          <button onclick="prevPage()" id="prevBtn">上一页</button>
-          <span class="page-info" id="pageInfo">第 1 / 1 页</span>
-          <button onclick="nextPage()" id="nextBtn">下一页</button>
+          <button onclick="prev()" id="prevBtn">上一页</button>
+          <span class="page-info" id="pageInfo">1 / 1</span>
+          <button onclick="next()" id="nextBtn">下一页</button>
         </div>
       </div>
     </div>
   </div>
-  
+
   <div id="modal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 id="modalTitle">新增员工</h3>
+        <h3 id="mTitle">新增员工</h3>
         <button class="modal-close" onclick="closeModal()">×</button>
       </div>
       <div class="modal-body">
-        <div class="modal-form">
-          <div class="form-group">
-            <label>工号 *</label>
-            <input type="text" id="gonghao" placeholder="请输入工号" />
-          </div>
-          <div class="form-group">
-            <label>姓名 *</label>
-            <input type="text" id="xingming" placeholder="请输入姓名" />
-          </div>
-          <div class="form-group">
-            <label>性别 *</label>
-            <select id="xingbie">
-              <option value="男">男</option>
-              <option value="女">女</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>职位</label>
-            <input type="text" id="zhiwei" placeholder="请输入职位" />
-          </div>
-          <div class="form-group">
-            <label>联系方式</label>
-            <input type="text" id="lianxifangshi" placeholder="请输入联系方式" />
-          </div>
-          <div class="form-group">
-            <label>身份证号</label>
-            <input type="text" id="shenfenzhenghao" placeholder="请输入身份证号" />
-          </div>
-          <div class="form-group full-width">
-            <label>负责项目</label>
-            <input type="text" id="fuzexiangmu" placeholder="请输入负责项目" />
-          </div>
-        </div>
+        <div class="form-group"><label>工号</label><input type="text" id="f_code"></div>
+        <div class="form-group"><label>姓名</label><input type="text" id="f_name"></div>
+        <div class="form-group"><label>性别</label><select id="f_sex"><option>男</option><option>女</option></select></div>
+        <div class="form-group"><label>职位</label><input type="text" id="f_job"></div>
+        <div class="form-group"><label>电话</label><input type="text" id="f_tel"></div>
+        <div class="form-group full-width"><label>头像URL</label><input type="text" id="f_img"></div>
       </div>
       <div class="modal-footer" id="modalFooter">
-        <button class="btn-cancel" onclick="closeModal()">取消</button>
-        <button class="btn btn-primary" onclick="saveEmployee()">保存</button>
+        <button class="btn btn-cancel" onclick="closeModal()">取消</button>
+        <button class="btn btn-primary" onclick="save()">保存</button>
       </div>
     </div>
   </div>
-  
+
   <script>
-    // API基础路径
-    const base = '/springboot2z04j';
-    let page = 1;
-    const limit = 10;
-    let totalPage = 1;
-    let selectedIds = new Set();
-    let currentEmployee = null;
-    let modalMode = 'add'; // 'add', 'edit', 'view'
+    const API_BASE = '/springboot2z04j/yuangongxinxi';
+    let page = 1, limit = 10, totalPage = 1, currItem = null, mode = 'add';
     
-    // 当前列表数据缓存（来自后端）
-    let employeesData = [];
-    
-    // 设置消息
-    function setMsg(text, type) {
-      const el = document.getElementById('msg');
-      if (!text) {
-        el.className = 'msg';
-        el.textContent = '';
-        return;
-      }
-      el.textContent = text;
-      el.className = `msg ${type} show`;
-      setTimeout(() => {
-        el.className = 'msg';
-      }, 3000);
+    function showMsg(txt, type) {
+      const m = document.getElementById('msg');
+      m.className = `msg ${type} show`; m.textContent = txt;
+      setTimeout(() => m.className = 'msg', 3000);
     }
-    
-    // 退出登录
-    function logout() {
-      if (confirm('确定要退出登录吗？')) {
-        try {
-          localStorage.removeItem('token');
-        } catch (e) {}
-        window.location.href = 'index.html';
-      }
-    }
-    
-    // 导航
-    function navigate(url) {
-      window.location.href = url;
-    }
-    
-    // 加载员工列表（数据库）
-    async function loadEmployees() {
-      setMsg('');
-      let token = '';
-      try { token = localStorage.getItem('token') || ''; } catch(e) {}
-      if (!token) {
-        setMsg('未登录或会话过期', 'error');
-        setTimeout(() => { window.location.href = 'index.html'; }, 1200);
-        return;
-      }
+
+    async function loadData() {
+      const code = document.getElementById('s_code').value;
+      const name = document.getElementById('s_name').value;
+      let url = `${API_BASE}/page?page=${page}&limit=${limit}`;
+      if(code) url += `&gonghao=${encodeURIComponent(code)}`;
+      if(name) url += `&xingming=${encodeURIComponent(name)}`;
+      
       try {
-        const gonghao = document.getElementById('searchGonghao').value.trim();
-        const xingming = document.getElementById('searchXingming').value.trim();
-        let url = `${base}/yuangongxinxi/page?page=${page}&limit=${limit}`;
-        if (gonghao) url += `&gonghao=${encodeURIComponent(gonghao)}`;
-        if (xingming) url += `&xingming=${encodeURIComponent(xingming)}`;
-        const res = await fetch(url, { headers: { 'Token': token } });
-        const data = await res.json().catch(() => ({}));
-        if (!data || data.code !== 0) {
-          setMsg((data && data.msg) || '加载失败', 'error');
-          if (data && data.code === 401) {
-            try { localStorage.removeItem('token'); } catch(e) {}
-            setTimeout(() => { window.location.href = 'index.html'; }, 1200);
-          }
-          return;
-        }
-        const list = (data.data && data.data.list) || [];
-        totalPage = (data.data && data.data.totalPage) || 1;
-        const currPage = (data.data && data.data.currPage) || page;
-        page = currPage;
-        employeesData = list;
-        renderTable(list);
-        updatePagination();
-        if (list.length === 0) setMsg('暂无数据', 'success');
-      } catch (e) {
-        console.error(e);
-        setMsg('网络错误，请稍后重试', 'error');
-      }
-    }
-    
-    // 渲染表格
-    function renderTable(list) {
-      const tbody = document.getElementById('tbody');
-      if (list.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#999;">暂无数据</td></tr>';
-        return;
-      }
-      
-      tbody.innerHTML = list.map((emp, index) => `
-        <tr>
-          <td><input type="checkbox" value="${emp.id}" onchange="toggleSelect(${emp.id})" ${selectedIds.has(emp.id) ? 'checked' : ''} /></td>
-          <td>${(page - 1) * limit + index + 1}</td>
-          <td>${emp.gonghao || ''}</td>
-          <td>${emp.xingming || ''}</td>
-          <td>${emp.xingbie || ''}</td>
-          <td>${emp.zhiwei || '-'}</td>
-          <td>${emp.lianxifangshi || '-'}</td>
-          <td>${emp.fuzexiangmu || '-'}</td>
-          <td>${emp.touxiang ? `<img src="${emp.touxiang}" class="avatar" alt="头像" />` : '<div style="width:50px;height:50px;background:#f0f0f0;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#999;">无</div>'}</td>
-          <td>
-            <div class="action-btns">
-              <button class="btn btn-sm btn-success" onclick="viewDetail(${emp.id})">详情</button>
-              <button class="btn btn-sm btn-info" onclick="editEmployee(${emp.id})">修改</button>
-              <button class="btn btn-sm btn-danger" onclick="deleteEmployee(${emp.id})">删除</button>
-            </div>
-          </td>
-        </tr>
-      `).join('');
-    }
-    
-    // 更新分页信息
-    function updatePagination() {
-      document.getElementById('pageInfo').textContent = `第 ${page} / ${totalPage} 页`;
-      document.getElementById('prevBtn').disabled = page <= 1;
-      document.getElementById('nextBtn').disabled = page >= totalPage;
-    }
-    
-    // 上一页
-    function prevPage() {
-      if (page > 1) {
-        page--;
-        loadEmployees();
-      }
-    }
-    
-    // 下一页
-    function nextPage() {
-      if (page < totalPage) {
-        page++;
-        loadEmployees();
-      }
-    }
-    
-    // 搜索
-    function searchEmployees() {
-      page = 1;
-      loadEmployees();
-    }
-    
-    // 重置搜索
-    function resetEmployeesSearch() {
-      document.getElementById('searchGonghao').value = '';
-      document.getElementById('searchXingming').value = '';
-      page = 1;
-      selectedIds.clear();
-      setMsg('搜索条件已重置！', 'success');
-      loadEmployees();
-    }
-    
-    // 切换全选
-    function toggleSelectAll() {
-      const checked = document.getElementById('selectAll').checked;
-      const checkboxes = document.querySelectorAll('tbody input[type="checkbox"]');
-      checkboxes.forEach(cb => {
-        cb.checked = checked;
-        const id = parseInt(cb.value);
-        if (checked) {
-          selectedIds.add(id);
-        } else {
-          selectedIds.delete(id);
-        }
-      });
-    }
-    
-    // 切换单个选择
-    function toggleSelect(id) {
-      if (selectedIds.has(id)) {
-        selectedIds.delete(id);
-      } else {
-        selectedIds.add(id);
-      }
-    }
-    
-    // 打开模态框
-    function openModal(mode, id = null) {
-      modalMode = mode;
-      const modal = document.getElementById('modal');
-      const modalTitle = document.getElementById('modalTitle');
-      const modalFooter = document.getElementById('modalFooter');
-      
-      if (mode === 'add') {
-        modalTitle.textContent = '新增员工';
-        clearForm();
-        setFormDisabled(false);
-        modalFooter.style.display = 'flex';
-      } else if (mode === 'edit') {
-        modalTitle.textContent = '修改员工信息';
-        currentEmployee = employeesData.find(emp => emp.id === id);
-        fillForm(currentEmployee);
-        setFormDisabled(false);
-        modalFooter.style.display = 'flex';
-      } else if (mode === 'view') {
-        modalTitle.textContent = '员工详情';
-        currentEmployee = employeesData.find(emp => emp.id === id);
-        fillForm(currentEmployee);
-        setFormDisabled(true);
-        modalFooter.style.display = 'none';
-      }
-      
-      modal.classList.add('show');
-    }
-    
-    // 关闭模态框
-    function closeModal() {
-      document.getElementById('modal').classList.remove('show');
-      clearForm();
-      currentEmployee = null;
-    }
-    
-    // 填充表单
-    function fillForm(emp) {
-      document.getElementById('gonghao').value = emp.gonghao || '';
-      document.getElementById('xingming').value = emp.xingming || '';
-      document.getElementById('xingbie').value = emp.xingbie || '男';
-      document.getElementById('zhiwei').value = emp.zhiwei || '';
-      document.getElementById('lianxifangshi').value = emp.lianxifangshi || '';
-      document.getElementById('shenfenzhenghao').value = emp.shenfenzhenghao || '';
-      document.getElementById('fuzexiangmu').value = emp.fuzexiangmu || '';
-    }
-    
-    // 清空表单
-    function clearForm() {
-      document.getElementById('gonghao').value = '';
-      document.getElementById('xingming').value = '';
-      document.getElementById('xingbie').value = '男';
-      document.getElementById('zhiwei').value = '';
-      document.getElementById('lianxifangshi').value = '';
-      document.getElementById('shenfenzhenghao').value = '';
-      document.getElementById('fuzexiangmu').value = '';
-    }
-    
-    // 设置表单禁用状态
-    function setFormDisabled(disabled) {
-      document.getElementById('gonghao').disabled = disabled;
-      document.getElementById('xingming').disabled = disabled;
-      document.getElementById('xingbie').disabled = disabled;
-      document.getElementById('zhiwei').disabled = disabled;
-      document.getElementById('lianxifangshi').disabled = disabled;
-      document.getElementById('shenfenzhenghao').disabled = disabled;
-      document.getElementById('fuzexiangmu').disabled = disabled;
-    }
-    
-    // 保存员工
-    async function saveEmployee() {
-      const gonghao = document.getElementById('gonghao').value.trim();
-      const xingming = document.getElementById('xingming').value.trim();
-      if (!gonghao || !xingming) {
-        setMsg('请填写工号和姓名！', 'error');
-        return;
-      }
-      const employeeData = {
-        gonghao,
-        xingming,
-        xingbie: document.getElementById('xingbie').value,
-        zhiwei: document.getElementById('zhiwei').value.trim(),
-        lianxifangshi: document.getElementById('lianxifangshi').value.trim(),
-        shenfenzhenghao: document.getElementById('shenfenzhenghao').value.trim(),
-        fuzexiangmu: document.getElementById('fuzexiangmu').value.trim(),
-        touxiang: ''
-      };
-      let token = '';
-      try { token = localStorage.getItem('token') || ''; } catch(e) {}
-      if (!token) {
-        setMsg('未登录或会话过期', 'error');
-        setTimeout(() => { window.location.href = 'index.html'; }, 1200);
-        return;
-      }
-      try {
-        try {
-          const checkUrl = `${base}/yuangongxinxi/page?page=1&limit=1&gonghao=${encodeURIComponent(gonghao)}`;
-          const checkRes = await fetch(checkUrl, { headers: { 'Token': token } });
-          const checkData = await checkRes.json().catch(() => ({}));
-          const exists = checkData && checkData.code === 0 && checkData.data && Array.isArray(checkData.data.list) && checkData.data.list.length > 0;
-          if (exists && !(modalMode === 'edit' && currentEmployee && checkData.data.list[0].id === currentEmployee.id)) {
-            setMsg('工号已存在，请更换！', 'error');
+        const res = await fetch(url, { headers: {'Token': localStorage.getItem('token')} });
+        const d = await res.json();
+        if(d.code !== 0) return showMsg(d.msg || '加载失败', 'error');
+        
+        const list = d.data.list || [];
+        totalPage = d.data.totalPage || 1;
+        document.getElementById('pageInfo').innerText = `${page} / ${totalPage}`;
+        document.getElementById('prevBtn').disabled = page <= 1;
+        document.getElementById('nextBtn').disabled = page >= totalPage;
+        
+        if (list.length === 0) {
+            document.getElementById('tbody').innerHTML = '<tr><td colspan="8" style="text-align:center;color:#999;padding:20px;">暂无数据</td></tr>';
             return;
-          }
-        } catch(e) {}
-        let url = `${base}/yuangongxinxi/save`;
-        let body = employeeData;
-        if (modalMode === 'edit' && currentEmployee && currentEmployee.id != null) {
-          url = `${base}/yuangongxinxi/update`;
-          body = Object.assign({}, employeeData, { id: currentEmployee.id });
         }
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'Token': token, 'Content-Type': 'application/json' },
-          body: JSON.stringify(body)
-        });
-        const data = await res.json().catch(() => ({}));
-        if (!data || data.code !== 0) {
-          setMsg((data && data.msg) || '操作失败', 'error');
-          if (data && data.code === 401) {
-            try { localStorage.removeItem('token'); } catch(e) {}
-            setTimeout(() => { window.location.href = 'index.html'; }, 1200);
-          }
-          return;
-        }
-        setMsg(modalMode === 'edit' ? '修改成功！' : '添加成功！', 'success');
-        closeModal();
-        loadEmployees();
-      } catch (e) {
-        setMsg('网络错误，请稍后重试', 'error');
+
+        document.getElementById('tbody').innerHTML = list.map(item => `
+          <tr>
+            <td><input type="checkbox" value="${item.id}" name="ids"></td>
+            <td>${item.gonghao||''}</td><td>${item.xingming||''}</td><td>${item.xingbie||''}</td>
+            <td>${item.zhiwei||''}</td><td>${item.lianxifangshi||''}</td>
+            <td>${item.touxiang ? `<img src="${item.touxiang}" class="avatar">` : '<div style="width:40px;height:40px;background:#f0f0f0;border-radius:4px;"></div>'}</td>
+            <td>
+              <div class="action-btns">
+                <button class="btn btn-sm btn-success" onclick='viewDetail(${JSON.stringify(item)})'>详情</button>
+                <button class="btn btn-sm btn-info" onclick='edit(${JSON.stringify(item)})'>修改</button>
+                <button class="btn btn-sm btn-danger" onclick="del(${item.id})">删除</button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      } catch(e){ showMsg('网络错误', 'error'); }
+    }
+
+    function openModal(m) {
+      mode = m; 
+      document.getElementById('modal').classList.add('show');
+      document.getElementById('modalFooter').style.display = 'block'; 
+      document.querySelectorAll('.modal-body input, .modal-body select').forEach(el => el.disabled = false);
+
+      if(m === 'add') {
+        document.getElementById('mTitle').innerText = '新增员工';
+        ['f_code','f_name','f_job','f_tel','f_img'].forEach(id => document.getElementById(id).value='');
+      } else if (m === 'edit') {
+        document.getElementById('mTitle').innerText = '修改员工';
+      } else if (m === 'view') {
+        document.getElementById('mTitle').innerText = '员工详情';
+        document.getElementById('modalFooter').style.display = 'none';
+        document.querySelectorAll('.modal-body input, .modal-body select').forEach(el => el.disabled = true);
       }
     }
+
+    function closeModal() { document.getElementById('modal').classList.remove('show'); }
     
-    // 查看详情
-    function viewDetail(id) {
-      openModal('view', id);
+    function viewDetail(item) {
+      currItem = item; 
+      openModal('view');
+      fillForm(item);
     }
-    
-    // 编辑员工
-    function editEmployee(id) {
-      openModal('edit', id);
+
+    function edit(item) {
+      currItem = item; 
+      openModal('edit');
+      fillForm(item);
     }
-    
-    // 删除员工
-    async function deleteEmployee(id) {
-      if (!confirm('确定要删除该员工信息吗？')) return;
-      let token = '';
-      try { token = localStorage.getItem('token') || ''; } catch(e) {}
-      if (!token) {
-        setMsg('未登录或会话过期', 'error');
-        setTimeout(() => { window.location.href = 'index.html'; }, 1200);
-        return;
-      }
-      try {
-        const url = `${base}/yuangongxinxi/delete`;
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'Token': token, 'Content-Type': 'application/json' },
-          body: JSON.stringify([id])
-        });
-        const data = await res.json().catch(() => ({}));
-        if (!data || data.code !== 0) {
-          setMsg((data && data.msg) || '删除失败', 'error');
-          if (data && data.code === 401) {
-            try { localStorage.removeItem('token'); } catch(e) {}
-            setTimeout(() => { window.location.href = 'index.html'; }, 1200);
-          }
-          return;
-        }
-        setMsg('删除成功！', 'success');
-        loadEmployees();
-      } catch (e) {
-        setMsg('网络错误，请稍后重试', 'error');
-      }
+
+    function fillForm(item) {
+      document.getElementById('f_code').value = item.gonghao||'';
+      document.getElementById('f_name').value = item.xingming||'';
+      document.getElementById('f_sex').value = item.xingbie||'男';
+      document.getElementById('f_job').value = item.zhiwei||'';
+      document.getElementById('f_tel').value = item.lianxifangshi||'';
+      document.getElementById('f_img').value = item.touxiang||'';
     }
-    
-    // 批量删除
-    async function batchDelete() {
-      if (selectedIds.size === 0) {
-        setMsg('请先选择要删除的员工！', 'error');
-        return;
-      }
-      if (!confirm(`确定要删除选中的 ${selectedIds.size} 条员工信息吗？`)) return;
-      let token = '';
-      try { token = localStorage.getItem('token') || ''; } catch(e) {}
-      if (!token) {
-        setMsg('未登录或会话过期', 'error');
-        setTimeout(() => { window.location.href = 'index.html'; }, 1200);
-        return;
-      }
-      try {
-        const url = `${base}/yuangongxinxi/delete`;
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'Token': token, 'Content-Type': 'application/json' },
-          body: JSON.stringify(Array.from(selectedIds))
-        });
-        const data = await res.json().catch(() => ({}));
-        if (!data || data.code !== 0) {
-          setMsg((data && data.msg) || '删除失败', 'error');
-          if (data && data.code === 401) {
-            try { localStorage.removeItem('token'); } catch(e) {}
-            setTimeout(() => { window.location.href = 'index.html'; }, 1200);
-          }
-          return;
-        }
-        setMsg('删除成功！', 'success');
-        selectedIds.clear();
-        loadEmployees();
-      } catch (e) {
-        setMsg('网络错误，请稍后重试', 'error');
-      }
+
+    async function save() {
+      const data = {
+        gonghao: document.getElementById('f_code').value,
+        xingming: document.getElementById('f_name').value,
+        xingbie: document.getElementById('f_sex').value,
+        zhiwei: document.getElementById('f_job').value,
+        lianxifangshi: document.getElementById('f_tel').value,
+        touxiang: document.getElementById('f_img').value
+      };
+      if(mode==='edit') data.id = currItem.id;
+      
+      const res = await fetch(`${API_BASE}/${mode==='add'?'save':'update'}`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'Token': localStorage.getItem('token')},
+        body: JSON.stringify(data)
+      });
+      const d = await res.json();
+      if(d.code===0) { showMsg('成功', 'success'); closeModal(); loadData(); }
+      else showMsg(d.msg, 'error');
     }
+
+    async function del(id) {
+      if(!confirm('确定删除?')) return;
+      const res = await fetch(`${API_BASE}/delete`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'Token': localStorage.getItem('token')},
+        body: JSON.stringify([id])
+      });
+      if((await res.json()).code===0) { showMsg('删除成功', 'success'); loadData(); }
+    }
+
+    async function delBatch() {
+      const ids = Array.from(document.querySelectorAll('input[name="ids"]:checked')).map(i=>parseInt(i.value));
+      if(!ids.length) return showMsg('请选择要删除的项', 'error');
+      if(!confirm('确定删除选中项?')) return;
+      
+      const res = await fetch(`${API_BASE}/delete`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'Token': localStorage.getItem('token')},
+        body: JSON.stringify(ids)
+      });
+      if((await res.json()).code===0) { showMsg('批量删除成功', 'success'); loadData(); }
+    }
+
+    function search() { page=1; loadData(); }
+    function reset() { 
+        document.getElementById('s_code').value=''; 
+        document.getElementById('s_name').value=''; 
+        page=1;
+        loadData(); 
+    }
+    function prev() { if(page>1) { page--; loadData(); } }
+    function next() { if(page<totalPage) { page++; loadData(); } }
     
-    // 页面加载时执行
-    loadEmployees();
+    document.getElementById('selAll').onchange = function() {
+      document.querySelectorAll('input[name="ids"]').forEach(cb => cb.checked = this.checked);
+    };
+
+    loadData();
   </script>
 </body>
 </html>

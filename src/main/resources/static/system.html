@@ -4,40 +4,29 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>轮播图管理 - 装修公司管理系统</title>
+  <script src="navbar.js"></script>
   <style>
-    /* CSS样式与users.html保持一致 */
+    /* 全局重置保持，确保字体一致 */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft YaHei", sans-serif; background: #f0f2f5; min-height: 100vh; }
-    .top-bar { height: 60px; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); position: fixed; top: 0; left: 0; right: 0; z-index: 1000; }
-    .top-bar h1 { font-size: 20px; font-weight: 600; }
-    .user-info { display: flex; align-items: center; gap: 12px; font-size: 14px; }
-    .user-info button { padding: 6px 16px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 4px; cursor: pointer; transition: all 0.3s; }
-    .user-info button:hover { background: rgba(255,255,255,0.3); }
-    .main-container { display: flex; margin-top: 60px; min-height: calc(100vh - 60px); }
-    .sidebar { width: 220px; background: #001529; color: white; flex-shrink: 0; overflow-y: auto; }
-    .menu-item { padding: 16px 24px; cursor: pointer; transition: all 0.3s; border-left: 3px solid transparent; display: flex; align-items: center; gap: 10px; font-size: 14px; }
-    .menu-item:hover { background: rgba(255,255,255,0.1); }
-    .menu-item.active { background: #1890ff; border-left-color: #40a9ff; }
-    .menu-item .icon { width: 16px; height: 16px; display: inline-block; }
-    .menu-group { margin-top: 8px; }
-    .menu-group-title { padding: 16px 24px 8px; font-size: 12px; color: rgba(255,255,255,0.5); text-transform: uppercase; }
     
-    /* 折叠菜单样式 */
-    .menu-item.has-submenu { justify-content: space-between; }
-    .menu-item .arrow { font-size: 12px; transition: transform 0.3s; margin-left: auto; }
-    .menu-item.open .arrow { transform: rotate(180deg); }
-    .submenu-container { background-color: #000c17; overflow: hidden; transition: all 0.3s; }
-    .submenu.menu-item { padding-left: 48px !important; font-size: 13px; }
+    /* --- 仅保留页面特定样式 (删除 sidebar, top-bar, main-container 等重复样式) --- */
     
-    .content { flex: 1; padding: 24px; overflow-y: auto; }
+    /* 面包屑 */
     .breadcrumb { margin-bottom: 20px; display: flex; align-items: center; gap: 8px; font-size: 14px; color: #666; }
     .breadcrumb span { color: #1890ff; }
+    
+    /* 内容卡片 */
     .content-card { background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 24px; }
+    
+    /* 搜索栏 */
     .search-bar { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: flex-end; }
     .search-field { display: flex; flex-direction: column; gap: 6px; }
     .search-field label { font-size: 14px; color: #333; }
     .search-field input { padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 14px; width: 200px; outline: none; transition: all 0.3s; }
     .search-field input:focus { border-color: #1890ff; box-shadow: 0 0 0 2px rgba(24,144,255,0.1); }
+    
+    /* 工具栏 */
     .toolbar { display: flex; gap: 12px; margin-bottom: 20px; }
     .btn { padding: 8px 16px; border: none; border-radius: 4px; font-size: 14px; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 6px; }
     .btn-primary { background: #1890ff; color: white; }
@@ -45,6 +34,8 @@
     .btn-danger { background: #ff4d4f; color: white; }
     .btn-danger:hover { background: #ff7875; }
     .btn-search { background: #1890ff; color: white; margin-top: 24px; }
+    
+    /* 表格 */
     .table-container { overflow-x: auto; margin-bottom: 20px; }
     table { width: 100%; border-collapse: collapse; font-size: 14px; }
     thead { background: #fafafa; }
@@ -52,16 +43,23 @@
     td { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; color: #666; }
     tbody tr { transition: background 0.3s; }
     tbody tr:hover { background: #fafafa; }
+    
+    /* 本页特有：轮播图缩略图 */
     .slide-img { width: 120px; height: 60px; border-radius: 4px; object-fit: cover; }
+    
     .action-btns { display: flex; gap: 8px; }
     .btn-sm { padding: 4px 12px; font-size: 13px; }
     .btn-info { background: #1890ff; color: white; }
     .btn-danger { background: #ff4d4f; color: white; }
+    
+    /* 分页 */
     .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 20px; }
     .pagination button { padding: 6px 12px; border: 1px solid #d9d9d9; background: white; border-radius: 4px; cursor: pointer; transition: all 0.3s; }
     .pagination button:hover:not(:disabled) { border-color: #1890ff; color: #1890ff; }
     .pagination button:disabled { opacity: 0.5; cursor: not-allowed; }
     .page-info { color: #666; font-size: 14px; }
+    
+    /* 消息提示 */
     .msg { padding: 12px 16px; border-radius: 4px; margin-bottom: 16px; font-size: 14px; display: none; }
     .msg.show { display: block; animation: fadeIn 0.3s; }
     .msg.error { background: #fff1f0; border: 1px solid #ffccc7; color: #cf1322; }
@@ -69,6 +67,7 @@
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
     
+    /* 弹窗样式 */
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 2000; align-items: center; justify-content: center; }
     .modal.show { display: flex; }
     .modal-content { background: white; border-radius: 8px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; }
@@ -81,81 +80,15 @@
     .modal-form input { padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 14px; outline: none; }
     .modal-footer { padding: 20px 30px; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 10px; }
     .btn-cancel { padding: 8px 16px; border: 1px solid #d9d9d9; background: white; border-radius: 4px; cursor: pointer; font-size: 14px; }
+    
     @media (max-width: 768px) {
-      .sidebar { position: fixed; left: -220px; height: calc(100vh - 60px); transition: left 0.3s; z-index: 100; }
-      .sidebar.open { left: 0; }
       .search-bar { flex-direction: column; }
       .search-field input { width: 100%; }
     }
   </style>
 </head>
 <body>
-  <div class="top-bar">
-    <h1>装修公司管理系统</h1>
-    <div class="user-info">
-      <span>管理员: admin</span>
-      <button onclick="logout()">退出登录</button>
-    </div>
-  </div>
-  
   <div class="main-container">
-    <div class="sidebar">
-      <div class="menu-item" onclick="navigate('index.html')">
-        <span class="icon">🏠</span>
-        <span>系统首页</span>
-      </div>
-      
-      <div class="menu-group">
-        <div class="menu-group-title">基础功能</div>
-        <div class="menu-item" onclick="navigate('profile.html')">
-          <span class="icon">👤</span>
-          <span>个人中心</span>
-        </div>
-        
-        <div class="menu-item has-submenu" onclick="toggleSubmenu('sys-sub')">
-          <span class="icon">⚙️</span>
-          <span>系统管理</span>
-          <span class="arrow">▼</span>
-        </div>
-        <div id="sys-sub" class="submenu-container">
-          <div class="submenu menu-item" onclick="navigate('users.html')">
-            <span>用户管理</span>
-          </div>
-          <div class="submenu menu-item active" onclick="navigate('system.html')">
-            <span>轮播图管理</span>
-          </div>
-        </div>
-      </div>
-      
-      <div class="menu-group">
-        <div class="menu-group-title">业务管理</div>
-        <div class="menu-item" onclick="navigate('employees.html')">
-          <span class="icon">👷</span>
-          <span>员工信息管理</span>
-        </div>
-        <div class="menu-item" onclick="navigate('gongsixinxi.html')">
-          <span class="icon">🏢</span>
-          <span>公司信息管理</span>
-        </div>
-        <div class="menu-item" onclick="navigate('category.html')">
-          <span class="icon">📦</span>
-          <span>商品分类管理</span>
-        </div>
-        <div class="menu-item" onclick="navigate('product.html')">
-          <span class="icon">🛍️</span>
-          <span>装修商品管理</span>
-        </div>
-        <div class="menu-item" onclick="navigate('work.html')">
-          <span class="icon">🎨</span>
-          <span>装修作品管理</span>
-        </div>
-        <div class="menu-item" onclick="navigate('order.html')">
-          <span class="icon">📝</span>
-          <span>订单管理</span>
-        </div>
-      </div>
-    </div>
-    
     <div class="content">
       <div class="breadcrumb">系统管理 / <span>轮播图管理</span></div>
       <div class="content-card">
@@ -233,8 +166,6 @@
     const base = '/springboot2z04j';
     let page = 1, limit = 10, totalPage = 1, selectedIds = new Set(), currentConfig = null, modalMode = 'add';
     
-    function navigate(link) { window.location.href = link; }
-    function logout() { try { localStorage.removeItem('token'); } catch(e) {} window.location.href = 'index.html'; }
     function setMsg(text, type) {
       const el = document.getElementById('msg');
       if (!text) { el.className = 'msg'; el.textContent = ''; return; }
@@ -242,26 +173,7 @@
       setTimeout(() => { el.className = 'msg'; }, 3000);
     }
     
-    // --- 折叠菜单逻辑 ---
-    function toggleSubmenu(id) {
-      const submenu = document.getElementById(id);
-      const parentItem = submenu.previousElementSibling;
-      if (submenu.style.display === 'none') {
-        submenu.style.display = 'block';
-        parentItem.classList.add('open');
-      } else {
-        submenu.style.display = 'none';
-        parentItem.classList.remove('open');
-      }
-    }
-    
-    // 自动展开系统管理
-    document.addEventListener('DOMContentLoaded', () => {
-      const submenu = document.getElementById('sys-sub');
-      const parentItem = submenu.previousElementSibling;
-      submenu.style.display = 'block';
-      parentItem.classList.add('open');
-    });
+    // 注意：logout, navigate, toggleSubmenu 等函数已在 navbar.js 中全局定义，这里无需重复
 
     async function loadConfig() {
       setMsg(''); let token;
@@ -269,14 +181,12 @@
       if (!token) { setMsg('未登录或会话过期', 'error'); setTimeout(() => { window.location.href = 'index.html'; }, 1500); return; }
       try {
         const name = document.getElementById('searchName').value.trim();
-        // 假设接口为 /config/page 或 /lunbotu/page
         let url = `${base}/config/page?page=${page}&limit=${limit}`; 
         if (name) url += `&name=${encodeURIComponent(name)}`;
         
         const res = await fetch(url, { headers: { 'Token': token } });
         const data = await res.json().catch(() => ({}));
         if (!data || data.code !== 0) {
-          // 如果config接口不存在，尝试访问lunbotu接口（作为备选方案）
           console.warn('Config load failed, trying generic...');
           setMsg('加载失败', 'error');
           return;
@@ -353,7 +263,7 @@
         document.getElementById('modalTitle').textContent = '修改轮播图';
         document.getElementById('c_name').value = item.name || '';
         document.getElementById('c_value').value = item.value || '';
-        document.getElementById('c_url').value = item.url || ''; // 假设有url字段
+        document.getElementById('c_url').value = item.url || '';
         document.getElementById('configModal').classList.add('show');
       }
     }
@@ -370,7 +280,6 @@
       
       let token = ''; try { token = localStorage.getItem('token') || ''; } catch(e) {}
       const payload = { name, value };
-      // 如果是config表，通常字段是 name, value
       
       let url = `${base}/config/save`;
       if (modalMode === 'edit' && currentConfig) { 

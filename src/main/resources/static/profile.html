@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>个人中心 - 装修公司管理系统</title>
+  <script src="navbar.js"></script>
+  <style>
+    /* 复用基础样式 */
+    .content-card { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); max-width: 600px; margin: 0 auto; }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; margin-bottom: 8px; color: #333; font-weight: 500; }
+    .form-group input { width: 100%; padding: 10px; border: 1px solid #d9d9d9; border-radius: 4px; outline: none; transition: all 0.3s; }
+    .form-group input:focus { border-color: #1890ff; box-shadow: 0 0 0 2px rgba(24,144,255,0.1); }
+    .btn { padding: 10px 24px; background: #1890ff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: 0.3s; }
+    .btn:hover { background: #40a9ff; }
+    .header { text-align: center; margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 20px; }
+    .avatar-large { width: 80px; height: 80px; border-radius: 50%; background: #eee; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 32px; color: #999; }
+    .msg { padding: 10px; border-radius: 4px; margin-bottom: 15px; display: none; text-align: center; }
+    .msg.success { background: #f6ffed; border: 1px solid #b7eb8f; color: #389e0d; display: block; }
+    .msg.error { background: #fff1f0; border: 1px solid #ffccc7; color: #cf1322; display: block; }
+  </style>
+</head>
+<body>
+  <div class="main-container">
+    <div class="content">
+      <div class="content-card">
+        <div class="header">
+          <div class="avatar-large">👤</div>
+          <h2>管理员资料设置</h2>
+        </div>
+        <div id="msg" class="msg"></div>
+        <div class="form-group">
+          <label>用户名</label>
+          <input type="text" value="admin" disabled style="background:#f5f5f5; cursor:not-allowed;">
+        </div>
+        <div class="form-group">
+          <label>旧密码</label>
+          <input type="password" id="oldPass" placeholder="请输入旧密码">
+        </div>
+        <div class="form-group">
+          <label>新密码</label>
+          <input type="password" id="newPass" placeholder="请输入新密码">
+        </div>
+        <div class="form-group">
+          <label>确认新密码</label>
+          <input type="password" id="confirmPass" placeholder="请再次输入新密码">
+        </div>
+        <button class="btn" onclick="updateProfile()">保存修改</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    async function updateProfile() {
+      const oldPass = document.getElementById('oldPass').value;
+      const newPass = document.getElementById('newPass').value;
+      const confirmPass = document.getElementById('confirmPass').value;
+      const msg = document.getElementById('msg');
+      
+      msg.className = 'msg'; 
+      msg.textContent = '';
+
+      if (!oldPass || !newPass) {
+        msg.textContent = '请填写密码信息'; msg.className = 'msg error'; return;
+      }
+      if (newPass !== confirmPass) {
+        msg.textContent = '两次输入的新密码不一致'; msg.className = 'msg error'; return;
+      }
+
+      // 模拟请求，实际请对接 /users/update 接口
+      msg.textContent = '密码修改成功，请重新登录'; 
+      msg.className = 'msg success';
+      
+      setTimeout(() => {
+        try { localStorage.removeItem('token'); } catch(e){}
+        window.location.href = 'index.html';
+      }, 1500);
+    }
+  </script>
+</body>
+</html>

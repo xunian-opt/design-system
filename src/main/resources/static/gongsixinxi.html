@@ -1,451 +1,242 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>公司信息管理 - 装修公司管理系统</title>
-  
-  <!-- 引入导航栏组件 -->
-  <script src="navbar-component.html"></script>
-  
+  <meta charset="UTF-8">
+  <title>公司信息管理</title>
+  <script src="navbar.js"></script>
   <style>
+    /* 标准化样式 */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft YaHei", sans-serif; background: #f0f2f5; min-height: 100vh; }
-    .top-bar { height: 60px; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); position: fixed; top: 0; left: 0; right: 0; z-index: 1000; }
-    .top-bar h1 { font-size: 20px; font-weight: 600; }
-    .user-info { display: flex; align-items: center; gap: 12px; font-size: 14px; }
-    .user-info button { padding: 6px 16px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 4px; cursor: pointer; transition: all 0.3s; }
-    .user-info button:hover { background: rgba(255,255,255,0.3); }
-    .main-container { display: flex; margin-top: 60px; min-height: calc(100vh - 60px); }
-    .sidebar { width: 220px; background: #001529; color: white; flex-shrink: 0; overflow-y: auto; }
-    .menu-item { padding: 16px 24px; cursor: pointer; transition: all 0.3s; border-left: 3px solid transparent; display: flex; align-items: center; gap: 10px; font-size: 14px; }
-    .menu-item:hover { background: rgba(255,255,255,0.1); }
-    .menu-item.active { background: #1890ff; border-left-color: #40a9ff; }
-    .menu-item .icon { width: 16px; height: 16px; display: inline-block; }
-    .menu-group { margin-top: 8px; }
-    .menu-group-title { padding: 16px 24px 8px; font-size: 12px; color: rgba(255,255,255,0.5); text-transform: uppercase; }
-    .submenu { padding-left: 48px; }
-    .content { flex: 1; padding: 24px; overflow-y: auto; }
-    .breadcrumb { margin-bottom: 20px; display: flex; align-items: center; gap: 8px; font-size: 14px; color: #666; }
+    
+    .breadcrumb { margin-bottom: 20px; color: #666; font-size: 14px; display: flex; align-items: center; gap: 8px; }
     .breadcrumb span { color: #1890ff; }
-    .content-card { background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 24px; }
+    
+    .content-card { background: white; border-radius: 8px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    
     .search-bar { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: flex-end; }
     .search-field { display: flex; flex-direction: column; gap: 6px; }
     .search-field label { font-size: 14px; color: #333; }
-    .search-field input { padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 14px; width: 200px; outline: none; transition: all 0.3s; }
+    .search-field input { padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; width: 200px; outline: none; transition: all 0.3s; }
     .search-field input:focus { border-color: #1890ff; box-shadow: 0 0 0 2px rgba(24,144,255,0.1); }
+    
     .toolbar { display: flex; gap: 12px; margin-bottom: 20px; }
-    .btn { padding: 8px 16px; border: none; border-radius: 4px; font-size: 14px; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 6px; }
-    .btn-primary { background: #1890ff; color: white; }
-    .btn-primary:hover { background: #40a9ff; }
-    .btn-danger { background: #ff4d4f; color: white; }
-    .btn-danger:hover { background: #ff7875; }
-    .btn-search { background: #1890ff; color: white; margin-top: 24px; }
+    .btn { padding: 8px 16px; border: none; border-radius: 4px; font-size: 14px; cursor: pointer; transition: all 0.3s; color: white; display: inline-flex; align-items: center; justify-content: center; }
+    .btn-search { background: #1890ff; } .btn-search:hover { background: #40a9ff; }
+    .btn-danger { background: #ff4d4f; } .btn-danger:hover { background: #ff7875; }
+    .btn-primary { background: #1890ff; } .btn-primary:hover { background: #40a9ff; }
+    
     .table-container { overflow-x: auto; margin-bottom: 20px; }
     table { width: 100%; border-collapse: collapse; font-size: 14px; }
     thead { background: #fafafa; }
     th { padding: 12px 16px; text-align: left; font-weight: 600; color: #333; border-bottom: 1px solid #f0f0f0; white-space: nowrap; }
-    td { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; color: #666; }
-    tbody tr { transition: background 0.3s; }
+    td { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; color: #666; vertical-align: middle; }
     tbody tr:hover { background: #fafafa; }
-    .company-photo { width: 60px; height: 60px; border-radius: 4px; object-fit: cover; }
-    .action-btns { display: flex; gap: 8px; flex-wrap: wrap; }
-    .btn-sm { padding: 4px 12px; font-size: 13px; }
-    .btn-success { background: #52c41a; color: white; }
-    .btn-success:hover { background: #73d13d; }
-    .btn-info { background: #1890ff; color: white; }
-    .btn-info:hover { background: #40a9ff; }
-    .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 20px; }
-    .pagination button { padding: 6px 12px; border: 1px solid #d9d9d9; background: white; border-radius: 4px; cursor: pointer; transition: all 0.3s; }
-    .pagination button:hover:not(:disabled) { border-color: #1890ff; color: #1890ff; }
-    .pagination button:disabled { opacity: 0.5; cursor: not-allowed; }
-    .page-info { color: #666; font-size: 14px; }
-    .msg { padding: 12px 16px; border-radius: 4px; margin-bottom: 16px; font-size: 14px; display: none; }
-    .msg.show { display: block; animation: fadeIn 0.3s; }
-    .msg.error { background: #fff1f0; border: 1px solid #ffccc7; color: #cf1322; }
-    .msg.success { background: #f6ffed; border: 1px solid #b7eb8f; color: #389e0d; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-    input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 2000; align-items: center; justify-content: center; }
+    .thumb { width: 60px; height: 60px; object-fit: cover; border-radius: 4px; }
+    
+    .action-btns { display: flex; gap: 8px; }
+    .btn-sm { padding: 4px 12px; font-size: 12px; }
+    .btn-info { background: #1890ff; } .btn-info:hover { background: #40a9ff; }
+    .btn-success { background: #52c41a; } .btn-success:hover { background: #73d13d; }
+    
+    /* 模态框 */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; }
     .modal.show { display: flex; }
-    .modal-content { background: white; border-radius: 8px; width: 90%; max-width: 700px; max-height: 90vh; overflow-y: auto; }
-    .modal-header { padding: 20px 30px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
-    .modal-header h3 { font-size: 18px; color: #111827; }
-    .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #6b7280; padding: 0; width: 30px; height: 30px; }
-    .modal-body { padding: 30px; }
-    .modal-form { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-    .modal-form .form-group { display: flex; flex-direction: column; gap: 6px; }
-    .modal-form .form-group.full-width { grid-column: 1 / -1; }
-    .modal-form label { font-size: 14px; color: #333; }
-    .modal-form input, .modal-form textarea { padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 14px; outline: none; font-family: inherit; }
-    .modal-form input:focus, .modal-form textarea:focus { border-color: #1890ff; box-shadow: 0 0 0 2px rgba(24,144,255,0.1); }
-    .modal-form textarea { resize: vertical; min-height: 80px; }
-    .modal-footer { padding: 20px 30px; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 10px; }
-    .btn-cancel { padding: 8px 16px; border: 1px solid #d9d9d9; background: white; border-radius: 4px; cursor: pointer; font-size: 14px; }
-    .btn-cancel:hover { background-color: #f3f4f6; }
-    .detail-item { margin-bottom: 20px; display: grid; grid-template-columns: 120px 1fr; gap: 12px; }
-    .detail-label { font-weight: 600; color: #606266; font-size: 14px; }
-    .detail-value { color: #303133; font-size: 14px; }
-    .detail-photo { max-width: 100%; max-height: 300px; border-radius: 4px; margin-top: 8px; }
-    @media (max-width: 768px) {
-      .search-bar { flex-direction: column; }
-      .search-field input { width: 100%; }
-      .modal-form { grid-template-columns: 1fr; }
-    }
+    .modal-content { background: white; border-radius: 8px; width: 600px; max-height: 90vh; overflow-y: auto; }
+    .modal-header { padding: 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
+    .modal-header h3 { font-size: 16px; margin: 0; }
+    .modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: #999; }
+    .modal-body { padding: 24px; display: grid; grid-template-columns: 1fr; gap: 16px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 14px; color: #333; }
+    .form-group input, .form-group textarea { padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; outline: none; width: 100%; }
+    .form-group textarea { height: 100px; resize: vertical; }
+    .modal-footer { padding: 20px; border-top: 1px solid #f0f0f0; text-align: right; }
+    .btn-cancel { background: white; border: 1px solid #d9d9d9; color: #666; margin-right: 8px; } .btn-cancel:hover { color: #333; border-color: #999; }
+    
+    .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 20px; }
+    .pagination button { padding: 6px 12px; border: 1px solid #d9d9d9; background: white; border-radius: 4px; cursor: pointer; color: #666; }
+    .pagination button:hover:not(:disabled) { border-color: #1890ff; color: #1890ff; }
+    .page-info { color: #666; font-size: 14px; }
   </style>
 </head>
 <body>
-  <div class="top-bar">
-    <h1>装修公司管理系统</h1>
-    <div class="user-info">
-      <span>管理员: admin</span>
-      <button onclick="logout()">退出登录</button>
-    </div>
-  </div>
-  
   <div class="main-container">
-    <div class="sidebar">
-      <div class="menu-item" onclick="navigate('index.html')">
-        <span class="icon">🏠</span>
-        <span>系统首页</span>
-      </div>
-      <div class="menu-group">
-        <div class="menu-group-title">系统管理</div>
-        <div class="menu-item" onclick="navigate('profile.html')">
-          <span class="icon">👤</span>
-          <span>个人中心</span>
-        </div>
-        <div class="menu-item" onclick="navigate('users.html')">
-          <span class="icon">👥</span>
-          <span>用户管理</span>
-        </div>
-        <div class="submenu menu-item" onclick="navigate('users.html')">
-          <span>用户</span>
-        </div>
-      </div>
-      <div class="menu-group">
-        <div class="menu-group-title">业务管理</div>
-        <div class="menu-item" onclick="navigate('employees.html')">
-          <span class="icon">👷</span>
-          <span>员工信息管理</span>
-        </div>
-        <div class="menu-item active">
-          <span class="icon">🏢</span>
-          <span>公司信息管理</span>
-        </div>
-        <div class="menu-item" onclick="navigate('category.html')">
-          <span class="icon">📦</span>
-          <span>商品分类管理</span>
-        </div>
-        <div class="menu-item" onclick="navigate('product.html')">
-          <span class="icon">🛍️</span>
-          <span>装修商品管理</span>
-        </div>
-        <div class="menu-item" onclick="navigate('work.html')">
-          <span class="icon">🎨</span>
-          <span>装修作品管理</span>
-        </div>
-        <div class="menu-item" onclick="navigate('system.html')">
-          <span class="icon">⚙️</span>
-          <span>系统管理</span>
-        </div>
-        <div class="menu-item" onclick="navigate('order.html')">
-          <span class="icon">📋</span>
-          <span>订单管理</span>
-        </div>
-      </div>
-    </div>
-    
     <div class="content">
-      <div class="breadcrumb">系统首页 / <span>公司信息管理</span></div>
+      <div class="breadcrumb">业务管理 / <span>公司信息管理</span></div>
       <div class="content-card">
         <div class="search-bar">
-          <div class="search-field"><label>公司名称</label><input type="text" id="searchName" placeholder="请输入公司名称" /></div>
-          <div class="search-field"><label>公司地址</label><input type="text" id="searchAddress" placeholder="请输入公司地址" /></div>
-          <button class="btn btn-search" onclick="searchCompanies()">查询</button>
-          <button class="btn btn-danger" onclick="resetCompaniesSearch()">重置</button>
+          <div class="search-field">
+            <label>公司名称</label>
+            <input type="text" id="s_name" placeholder="请输入公司名称">
+          </div>
+          <button class="btn btn-search" onclick="loadData()">查询</button>
+          <button class="btn btn-danger" onclick="resetSearch()">重置</button>
         </div>
+        
         <div class="toolbar">
-          <button class="btn btn-primary" onclick="addCompany()">新增</button>
-          <button class="btn btn-danger" onclick="deleteSelected()">批量删除</button>
+          <button class="btn btn-primary" onclick="openModal('add')">新增</button>
+          <button class="btn btn-danger" onclick="delBatch()">批量删除</button>
         </div>
-        <div id="msg" class="msg"></div>
+        
         <div class="table-container">
           <table>
-            <thead><tr>
-              <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll()" /></th>
-              <th>索引</th><th>公司名称</th><th>公司照片</th><th>公司地址</th><th>经营范围</th><th>咨询电话</th><th>操作</th>
-            </tr></thead>
+            <thead><tr><th><input type="checkbox" id="selAll"></th><th>索引</th><th>名称</th><th>照片</th><th>地址</th><th>电话</th><th>操作</th></tr></thead>
             <tbody id="tbody"></tbody>
           </table>
         </div>
+        
         <div class="pagination">
-          <button onclick="prevPage()" id="prevBtn">上一页</button>
-          <span class="page-info" id="pageInfo">第 1 / 1 页</span>
-          <button onclick="nextPage()" id="nextBtn">下一页</button>
+          <button onclick="prev()">上一页</button>
+          <span class="page-info" id="pageInfo">1 / 1</span>
+          <button onclick="next()">下一页</button>
         </div>
       </div>
     </div>
   </div>
-  
-  <div id="companyModal" class="modal">
+
+  <div id="modal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 id="companyModalTitle">新增公司信息</h3>
-        <button class="modal-close" onclick="closeCompanyModal()">×</button>
+        <h3 id="modalTitle">新增公司信息</h3>
+        <button class="modal-close" onclick="closeModal()">×</button>
       </div>
       <div class="modal-body">
-        <div class="modal-form">
-          <div class="form-group">
-            <label>公司名称 *</label>
-            <input type="text" id="c_gongsimingcheng" placeholder="请输入公司名称" />
-          </div>
-          <div class="form-group">
-            <label>咨询电话</label>
-            <input type="text" id="c_zixundianhua" placeholder="请输入咨询电话" />
-          </div>
-          <div class="form-group full-width">
-            <label>公司地址</label>
-            <input type="text" id="c_gongsidizhi" placeholder="请输入公司地址" />
-          </div>
-          <div class="form-group full-width">
-            <label>公司照片地址</label>
-            <input type="text" id="c_gongsizhaopian" placeholder="请输入图片URL" />
-          </div>
-          <div class="form-group full-width">
-            <label>经营范围</label>
-            <textarea id="c_jingyingfanwei" placeholder="请输入经营范围"></textarea>
-          </div>
-          <div class="form-group full-width">
-            <label>公司介绍</label>
-            <textarea id="c_gongsijieshao" placeholder="请输入公司介绍"></textarea>
-          </div>
-        </div>
+        <div class="form-group"><label>公司名称</label><input type="text" id="f_name"></div>
+        <div class="form-group"><label>图片URL</label><input type="text" id="f_img"></div>
+        <div class="form-group"><label>公司地址</label><input type="text" id="f_addr"></div>
+        <div class="form-group"><label>咨询电话</label><input type="text" id="f_tel"></div>
+        <div class="form-group"><label>公司介绍</label><textarea id="f_desc"></textarea></div>
       </div>
-      <div class="modal-footer" id="companyModalFooter">
-        <button class="btn-cancel" onclick="closeCompanyModal()">取消</button>
-        <button class="btn btn-primary" onclick="saveCompany()">保存</button>
-      </div>
-    </div>
-  </div>
-  
-  <div id="detailModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>公司信息详情</h3>
-        <button class="modal-close" onclick="closeDetailModal()">×</button>
-      </div>
-      <div class="modal-body" id="detailContent"></div>
-      <div class="modal-footer">
-        <button class="btn-cancel" onclick="closeDetailModal()">关闭</button>
+      <div class="modal-footer" id="modalFooter">
+        <button class="btn btn-cancel" onclick="closeModal()">取消</button>
+        <button class="btn btn-primary" onclick="save()">保存</button>
       </div>
     </div>
   </div>
 
   <script>
-    const base = '/springboot2z04j';
-    let page = 1, limit = 10, totalPage = 1, selectedIds = new Set(), currentCompany = null, companyModalMode = 'add';
-    
-    function navigate(url) { window.location.href = url; }
-    function logout() { try { localStorage.removeItem('token'); } catch(e) {} window.location.href = 'index.html'; }
-    
-    function setMsg(text, type) {
-      const el = document.getElementById('msg');
-      if (!text) { el.className = 'msg'; el.textContent = ''; return; }
-      el.textContent = text; el.className = `msg ${type} show`;
-      setTimeout(() => { el.className = 'msg'; }, 3000);
-    }
-    
-    async function loadCompanies() {
-      setMsg(''); let token;
-      try { token = localStorage.getItem('token'); } catch (e) {}
-      if (!token) { setMsg('未登录或会话过期', 'error'); setTimeout(() => { window.location.href = 'index.html'; }, 1500); return; }
-      try {
-        const searchName = document.getElementById('searchName')?.value.trim() || '';
-        const searchAddress = document.getElementById('searchAddress')?.value.trim() || '';
-        let url = `${base}/gongsixinxi/page?page=${page}&limit=${limit}`;
-        if (searchName) url += `&gongsimingcheng=${encodeURIComponent(searchName)}`;
-        if (searchAddress) url += `&gongsidizhi=${encodeURIComponent(searchAddress)}`;
-        const res = await fetch(url, { headers: { 'Token': token } });
-        const data = await res.json().catch(() => ({}));
-        if (!data || data.code !== 0) {
-          setMsg((data && data.msg) || '加载失败', 'error');
-          if (data && data.code === 401) { try { localStorage.removeItem('token'); } catch (e) {} setTimeout(() => { window.location.href = 'index.html'; }, 1500); }
+    const API = '/springboot2z04j/gongsixinxi';
+    let currId = null, mode = 'add', page = 1, limit = 10, totalPage = 1;
+
+    async function loadData() {
+      const name = document.getElementById('s_name').value;
+      const res = await fetch(`${API}/page?page=${page}&limit=${limit}&gongsimingcheng=${name}`, { headers: {'Token': localStorage.getItem('token')} });
+      const d = await res.json();
+      const list = d.data.list || [];
+      totalPage = d.data.totalPage || 1;
+      document.getElementById('pageInfo').innerText = `${page} / ${totalPage}`;
+      
+      // --- 暂无数据 ---
+      if (list.length === 0) {
+          document.getElementById('tbody').innerHTML = '<tr><td colspan="7" style="text-align:center;color:#999;padding:20px;">暂无数据</td></tr>';
           return;
-        }
-        const list = (data.data && data.data.list) || [];
-        totalPage = (data.data && data.data.totalPage) || 1;
-        page = (data.data && data.data.currPage) || page;
-        window._companiesCache = list;
-        renderTable(list); updatePagination();
-        if (list.length === 0) setMsg('暂无数据', 'success');
-      } catch (e) { console.error('Load error:', e); setMsg('网络错误,请稍后重试', 'error'); }
-    }
-    
-    function renderTable(list) {
-      const tbody = document.getElementById('tbody');
-      if (list.length === 0) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#999;">暂无数据</td></tr>'; return; }
-      tbody.innerHTML = list.map((row, i) => `
+      }
+
+      document.getElementById('tbody').innerHTML = list.map((i, index) => `
         <tr>
-          <td><input type="checkbox" value="${row.id}" onchange="toggleSelect(${row.id})" ${selectedIds.has(row.id) ? 'checked' : ''} /></td>
-          <td>${(page - 1) * limit + i + 1}</td>
-          <td>${row.gongsimingcheng || ''}</td>
-          <td>${row.gongsizhaopian ? `<img src="${row.gongsizhaopian}" class="company-photo" alt="公司照片" />` : '<div style="width:60px;height:60px;background:#f0f0f0;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#999;">无</div>'}</td>
-          <td>${row.gongsidizhi || ''}</td>
-          <td>${row.jingyingfanwei || ''}</td>
-          <td>${row.zixundianhua || ''}</td>
+          <td><input type="checkbox" value="${i.id}" name="ids"></td>
+          <td>${(page - 1) * limit + index + 1}</td>
+          <td>${i.gongsimingcheng}</td>
+          <td><img src="${i.gongsizhaopian}" class="thumb"></td>
+          <td>${i.gongsidizhi}</td>
+          <td>${i.zixundianhua}</td>
           <td>
             <div class="action-btns">
-              <button class="btn btn-sm btn-success" onclick="viewDetail(${row.id})">详情</button>
-              <button class="btn btn-sm btn-info" onclick="editCompany(${row.id})">修改</button>
-              <button class="btn btn-sm btn-danger" onclick="deleteCompany(${row.id})">删除</button>
+              <button class="btn btn-sm btn-success" onclick='viewDetail(${JSON.stringify(i)})'>详情</button>
+              <button class="btn btn-sm btn-info" onclick='edit(${JSON.stringify(i)})'>修改</button>
+              <button class="btn btn-sm btn-danger" onclick="del(${i.id})">删除</button>
             </div>
           </td>
         </tr>
       `).join('');
     }
-    
-    function updatePagination() {
-      document.getElementById('pageInfo').textContent = `第 ${page} / ${totalPage} 页`;
-      document.getElementById('prevBtn').disabled = page <= 1;
-      document.getElementById('nextBtn').disabled = page >= totalPage;
+
+    function resetSearch() {
+        document.getElementById('s_name').value = '';
+        page = 1;
+        loadData();
     }
-    
-    function prevPage() { if (page > 1) { page--; loadCompanies(); } }
-    function nextPage() { if (page < totalPage) { page++; loadCompanies(); } }
-    function searchCompanies() { page = 1; loadCompanies(); }
-    function resetCompaniesSearch() {
-      const n = document.getElementById('searchName');
-      const a = document.getElementById('searchAddress');
-      if (n) n.value = '';
-      if (a) a.value = '';
-      page = 1;
-      selectedIds.clear();
-      setMsg('搜索条件已重置', 'success');
-      loadCompanies();
-    }
-    
-    function toggleSelectAll() {
-      const checked = document.getElementById('selectAll').checked;
-      document.querySelectorAll('tbody input[type="checkbox"]').forEach(cb => {
-        cb.checked = checked; const id = parseInt(cb.value);
-        checked ? selectedIds.add(id) : selectedIds.delete(id);
-      });
-    }
-    
-    function toggleSelect(id) { selectedIds.has(id) ? selectedIds.delete(id) : selectedIds.add(id); }
-    
-    function openCompanyModal(mode, id = null) {
-      companyModalMode = mode;
-      const modal = document.getElementById('companyModal');
-      const title = document.getElementById('companyModalTitle');
-      const footer = document.getElementById('companyModalFooter');
-      if (mode === 'add') {
-        title.textContent = '新增公司信息'; clearCompanyForm(); setCompanyFormDisabled(false); footer.style.display = 'flex'; currentCompany = null;
-      } else if (mode === 'edit') {
-        title.textContent = '修改公司信息';
-        const company = (window._companiesCache || []).find(c => c.id === id);
-        if (company) { currentCompany = company; fillCompanyForm(company); }
-        setCompanyFormDisabled(false); footer.style.display = 'flex';
+
+    function openModal(m) { 
+      mode = m; 
+      document.getElementById('modal').classList.add('show'); 
+      document.getElementById('modalFooter').style.display = 'block';
+      // 启用输入框
+      document.querySelectorAll('.modal-body input, .modal-body textarea').forEach(el => el.disabled = false);
+
+      if(m === 'add') {
+        document.getElementById('modalTitle').innerText = '新增公司信息';
+        document.querySelectorAll('input,textarea').forEach(i => i.value='');
+      } else if (m === 'edit') {
+        document.getElementById('modalTitle').innerText = '修改公司信息';
+      } else if (m === 'view') {
+        document.getElementById('modalTitle').innerText = '公司信息详情';
+        document.getElementById('modalFooter').style.display = 'none';
+        // 禁用输入框
+        document.querySelectorAll('.modal-body input, .modal-body textarea').forEach(el => el.disabled = true);
       }
-      modal.classList.add('show');
     }
     
-    function closeCompanyModal() { document.getElementById('companyModal').classList.remove('show'); clearCompanyForm(); currentCompany = null; }
-    function fillCompanyForm(c) {
-      document.getElementById('c_gongsimingcheng').value = c.gongsimingcheng || '';
-      document.getElementById('c_gongsizhaopian').value = c.gongsizhaopian || '';
-      document.getElementById('c_gongsidizhi').value = c.gongsidizhi || '';
-      document.getElementById('c_jingyingfanwei').value = c.jingyingfanwei || '';
-      document.getElementById('c_zixundianhua').value = c.zixundianhua || '';
-      document.getElementById('c_gongsijieshao').value = c.gongsijieshao || '';
-    }
-    function clearCompanyForm() {
-      ['c_gongsimingcheng', 'c_gongsizhaopian', 'c_gongsidizhi', 'c_jingyingfanwei', 'c_zixundianhua', 'c_gongsijieshao'].forEach(id => document.getElementById(id).value = '');
-    }
-    function setCompanyFormDisabled(disabled) {
-      ['c_gongsimingcheng', 'c_gongsizhaopian', 'c_gongsidizhi', 'c_jingyingfanwei', 'c_zixundianhua', 'c_gongsijieshao'].forEach(id => document.getElementById(id).disabled = disabled);
+    function closeModal() { document.getElementById('modal').classList.remove('show'); }
+
+    function viewDetail(i) {
+      openModal('view');
+      fillForm(i);
     }
     
-    function addCompany() { openCompanyModal('add'); }
-    
-    function viewDetail(id) {
-      const company = (window._companiesCache || []).find(c => c.id === id);
-      if (!company) { setMsg('公司信息不存在', 'error'); return; }
-      const detailHTML = `
-        <div class="detail-item"><div class="detail-label">公司名称:</div><div class="detail-value">${company.gongsimingcheng || ''}</div></div>
-        <div class="detail-item"><div class="detail-label">公司地址:</div><div class="detail-value">${company.gongsidizhi || ''}</div></div>
-        <div class="detail-item"><div class="detail-label">咨询电话:</div><div class="detail-value">${company.zixundianhua || ''}</div></div>
-        <div class="detail-item"><div class="detail-label">经营范围:</div><div class="detail-value">${company.jingyingfanwei || ''}</div></div>
-        <div class="detail-item"><div class="detail-label">公司介绍:</div><div class="detail-value">${company.gongsijieshao || ''}</div></div>
-        <div class="detail-item"><div class="detail-label">公司照片:</div><div class="detail-value">${company.gongsizhaopian ? `<img src="${company.gongsizhaopian}" class="detail-photo" alt="公司照片" />` : '无'}</div></div>
-        <div class="detail-item"><div class="detail-label">添加时间:</div><div class="detail-value">${formatDate(company.addtime)}</div></div>
-      `;
-      document.getElementById('detailContent').innerHTML = detailHTML;
-      document.getElementById('detailModal').classList.add('show');
+    function edit(i) {
+      currId = i.id;
+      openModal('edit');
+      fillForm(i);
     }
-    
-    function closeDetailModal() { document.getElementById('detailModal').classList.remove('show'); }
-    function editCompany(id) { openCompanyModal('edit', id); }
-    
-    async function saveCompany() {
-      const gongsimingcheng = document.getElementById('c_gongsimingcheng').value.trim();
-      if (!gongsimingcheng) { setMsg('请填写公司名称!', 'error'); return; }
-      let token = ''; try { token = localStorage.getItem('token') || ''; } catch(e) {}
-      if (!token) { setMsg('未登录或会话过期', 'error'); setTimeout(() => { window.location.href = 'index.html'; }, 1200); return; }
-      const payload = {
-        gongsimingcheng, 
-        gongsizhaopian: document.getElementById('c_gongsizhaopian').value.trim(),
-        gongsidizhi: document.getElementById('c_gongsidizhi').value.trim(),
-        jingyingfanwei: document.getElementById('c_jingyingfanwei').value.trim(),
-        zixundianhua: document.getElementById('c_zixundianhua').value.trim(),
-        gongsijieshao: document.getElementById('c_gongsijieshao').value.trim()
+
+    function fillForm(i) {
+      document.getElementById('f_name').value = i.gongsimingcheng;
+      document.getElementById('f_img').value = i.gongsizhaopian;
+      document.getElementById('f_addr').value = i.gongsidizhi;
+      document.getElementById('f_tel').value = i.zixundianhua;
+      document.getElementById('f_desc').value = i.gongsijieshao;
+    }
+
+    async function save() {
+      const data = {
+        gongsimingcheng: document.getElementById('f_name').value,
+        gongsizhaopian: document.getElementById('f_img').value,
+        gongsidizhi: document.getElementById('f_addr').value,
+        zixundianhua: document.getElementById('f_tel').value,
+        gongsijieshao: document.getElementById('f_desc').value
       };
-      let url = `${base}/gongsixinxi/save`;
-      if (companyModalMode === 'edit' && currentCompany) { url = `${base}/gongsixinxi/update`; payload.id = currentCompany.id; }
-      try {
-        const res = await fetch(url, { method: 'POST', headers: { 'Token': token, 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-        const data = await res.json().catch(() => ({}));
-        if (!data || data.code !== 0) { setMsg((data && data.msg) || '操作失败', 'error'); return; }
-        setMsg(companyModalMode === 'edit' ? '修改成功!' : '添加成功!', 'success'); closeCompanyModal(); loadCompanies();
-      } catch (e) { setMsg('网络错误,请稍后重试', 'error'); }
+      if(mode==='edit') data.id = currId;
+      await fetch(`${API}/${mode==='add'?'save':'update'}`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'Token': localStorage.getItem('token')},
+        body: JSON.stringify(data)
+      });
+      closeModal();
+      loadData();
+    }
+
+    async function del(id) {
+      if(confirm('确定要删除吗?')) {
+        await fetch(`${API}/delete`, { method: 'POST', headers: {'Content-Type': 'application/json', 'Token': localStorage.getItem('token')}, body: JSON.stringify([id]) });
+        loadData();
+      }
     }
     
-    async function deleteCompany(id) {
-      if (!confirm('确定要删除该公司信息吗?')) return;
-      let token = ''; try { token = localStorage.getItem('token') || ''; } catch(e) {}
-      if (!token) { setMsg('未登录或会话过期', 'error'); setTimeout(() => { window.location.href = 'index.html'; }, 1200); return; }
-      try {
-        const res = await fetch(`${base}/gongsixinxi/delete`, { method: 'POST', headers: { 'Token': token, 'Content-Type': 'application/json' }, body: JSON.stringify([id]) });
-        const data = await res.json().catch(() => ({}));
-        if (!data || data.code !== 0) { setMsg((data && data.msg) || '删除失败', 'error'); return; }
-        setMsg('删除成功!', 'success'); loadCompanies();
-      } catch (e) { setMsg('网络错误,请稍后重试', 'error'); }
+    async function delBatch() {
+      const ids = Array.from(document.querySelectorAll('input[name="ids"]:checked')).map(i=>i.value);
+      if(ids.length && confirm('确定要删除选中项吗?')) {
+        await fetch(`${API}/delete`, { method: 'POST', headers: {'Content-Type': 'application/json', 'Token': localStorage.getItem('token')}, body: JSON.stringify(ids) });
+        loadData();
+      }
     }
     
-    async function deleteSelected() {
-      if (selectedIds.size === 0) { setMsg('请先选择要删除的公司', 'error'); return; }
-      if (!confirm(`确定要删除选中的 ${selectedIds.size} 个公司吗?`)) return;
-      let token = ''; try { token = localStorage.getItem('token') || ''; } catch(e) {}
-      if (!token) { setMsg('未登录或会话过期', 'error'); setTimeout(() => { window.location.href = 'index.html'; }, 1200); return; }
-      try {
-        const res = await fetch(`${base}/gongsixinxi/delete`, { method: 'POST', headers: { 'Token': token, 'Content-Type': 'application/json' }, body: JSON.stringify(Array.from(selectedIds)) });
-        const data = await res.json().catch(() => ({}));
-        if (!data || data.code !== 0) { setMsg((data && data.msg) || '删除失败', 'error'); return; }
-        setMsg('批量删除成功!', 'success'); selectedIds.clear(); loadCompanies();
-      } catch (e) { setMsg('网络错误,请稍后重试', 'error'); }
-    }
-    
-    function formatDate(val) {
-      if (!val) return '';
-      try {
-        const d = new Date(val); if (isNaN(d.getTime())) return val;
-        const pad = n => String(n).padStart(2, '0');
-        return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-      } catch { return val; }
-    }
-    
-    loadCompanies();
+    function prev() { if(page > 1) { page--; loadData(); } }
+    function next() { if(page < totalPage) { page++; loadData(); } }
+
+    document.getElementById('selAll').onchange = function() { document.querySelectorAll('input[name="ids"]').forEach(c => c.checked = this.checked); };
+    loadData();
   </script>
 </body>
 </html>
