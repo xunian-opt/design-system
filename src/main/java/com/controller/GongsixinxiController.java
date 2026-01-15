@@ -57,37 +57,71 @@ public class GongsixinxiController {
     @Autowired
     private StoreupService storeupService;
 
-    
-
 
     /**
-     * 后端列表
+     * 后端列表（分页查询）
      */
     @RequestMapping("/page")
-    public R page(@RequestParam Map<String, Object> params,GongsixinxiEntity gongsixinxi,
-		HttpServletRequest request){
+    public R page(@RequestParam Map<String, Object> params, GongsixinxiEntity gongsixinxi,
+                  HttpServletRequest request){
+
         EntityWrapper<GongsixinxiEntity> ew = new EntityWrapper<GongsixinxiEntity>();
 
-		PageUtils page = gongsixinxiService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, gongsixinxi), params), params));
+        // 构建查询条件
+        if(StringUtils.isNotBlank(gongsixinxi.getGongsimingcheng())) {
+            ew.like("gongsimingcheng", gongsixinxi.getGongsimingcheng());
+        }
+        if(StringUtils.isNotBlank(gongsixinxi.getGongsidizhi())) {
+            ew.like("gongsidizhi", gongsixinxi.getGongsidizhi());
+        }
+        if(StringUtils.isNotBlank(gongsixinxi.getJingyingfanwei())) {
+            ew.like("jingyingfanwei", gongsixinxi.getJingyingfanwei());
+        }
+        if(StringUtils.isNotBlank(gongsixinxi.getZixundianhua())) {
+            ew.like("zixundianhua", gongsixinxi.getZixundianhua());
+        }
+
+        // 排序
+        String orderBy = (String) params.get("orderBy");
+        if(StringUtils.isNotBlank(orderBy)) {
+            ew.orderBy(orderBy);
+        } else {
+            ew.orderBy("addtime", false);
+        }
+
+        PageUtils page = gongsixinxiService.queryPage(params, ew);
 
         return R.ok().put("data", page);
     }
-    
+
     /**
-     * 前端列表
+     * 前端列表（分页查询）
      */
-	@IgnoreAuth
+    @IgnoreAuth
     @RequestMapping("/list")
-    public R list(@RequestParam Map<String, Object> params,GongsixinxiEntity gongsixinxi, 
-		HttpServletRequest request){
+    public R list(@RequestParam Map<String, Object> params, GongsixinxiEntity gongsixinxi,
+                  HttpServletRequest request){
+
         EntityWrapper<GongsixinxiEntity> ew = new EntityWrapper<GongsixinxiEntity>();
 
-		PageUtils page = gongsixinxiService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, gongsixinxi), params), params));
+        // 构建查询条件
+        if(StringUtils.isNotBlank(gongsixinxi.getGongsimingcheng())) {
+            ew.like("gongsimingcheng", gongsixinxi.getGongsimingcheng());
+        }
+        if(StringUtils.isNotBlank(gongsixinxi.getGongsidizhi())) {
+            ew.like("gongsidizhi", gongsixinxi.getGongsidizhi());
+        }
+
+        // 排序
+        ew.orderBy("addtime", false);
+
+        PageUtils page = gongsixinxiService.queryPage(params, ew);
+
         return R.ok().put("data", page);
     }
 
 	/**
-     * 列表
+     * 列表（不分页）
      */
     @RequestMapping("/lists")
     public R list( GongsixinxiEntity gongsixinxi){
@@ -106,26 +140,32 @@ public class GongsixinxiController {
 		GongsixinxiView gongsixinxiView =  gongsixinxiService.selectView(ew);
 		return R.ok("查询公司信息成功").put("data", gongsixinxiView);
     }
-	
+
     /**
      * 后端详情
      */
     @RequestMapping("/info/{id}")
     public R info(@PathVariable("id") Long id){
         GongsixinxiEntity gongsixinxi = gongsixinxiService.selectById(id);
+        if(gongsixinxi == null) {
+            return R.error("公司信息不存在");
+        }
         return R.ok().put("data", gongsixinxi);
     }
 
     /**
      * 前端详情
      */
-	@IgnoreAuth
+    @IgnoreAuth
     @RequestMapping("/detail/{id}")
     public R detail(@PathVariable("id") Long id){
         GongsixinxiEntity gongsixinxi = gongsixinxiService.selectById(id);
+        if(gongsixinxi == null) {
+            return R.error("公司信息不存在");
+        }
         return R.ok().put("data", gongsixinxi);
     }
-    
+
 
 
 
@@ -133,22 +173,54 @@ public class GongsixinxiController {
      * 后端保存
      */
     @RequestMapping("/save")
+    @Transactional
     public R save(@RequestBody GongsixinxiEntity gongsixinxi, HttpServletRequest request){
-    	gongsixinxi.setId(new Date().getTime()+new Double(Math.floor(Math.random()*1000)).longValue());
-    	//ValidatorUtils.validateEntity(gongsixinxi);
+        // 验证必填字段
+        if(StringUtils.isBlank(gongsixinxi.getGongsimingcheng())) {
+            return R.error("公司名称不能为空");
+        }
+
+        // 设置ID和添加时间
+        gongsixinxi.setId(new Date().getTime() + new Double(Math.floor(Math.random()*1000)).longValue());
+        gongsixinxi.setAddtime(new Date());
+
+        // 验证公司名称是否已存在
+        EntityWrapper<GongsixinxiEntity> ew = new EntityWrapper<GongsixinxiEntity>();
+        ew.eq("gongsimingcheng", gongsixinxi.getGongsimingcheng());
+        List<GongsixinxiEntity> list = gongsixinxiService.selectList(ew);
+        if(list != null && list.size() > 0) {
+            return R.error("公司名称已存在");
+        }
+
         gongsixinxiService.insert(gongsixinxi);
-        return R.ok();
+        return R.ok("保存成功");
     }
-    
+
     /**
      * 前端保存
      */
     @RequestMapping("/add")
+    @Transactional
     public R add(@RequestBody GongsixinxiEntity gongsixinxi, HttpServletRequest request){
-    	gongsixinxi.setId(new Date().getTime()+new Double(Math.floor(Math.random()*1000)).longValue());
-    	//ValidatorUtils.validateEntity(gongsixinxi);
+        // 验证必填字段
+        if(StringUtils.isBlank(gongsixinxi.getGongsimingcheng())) {
+            return R.error("公司名称不能为空");
+        }
+
+        // 设置ID和添加时间
+        gongsixinxi.setId(new Date().getTime() + new Double(Math.floor(Math.random()*1000)).longValue());
+        gongsixinxi.setAddtime(new Date());
+
+        // 验证公司名称是否已存在
+        EntityWrapper<GongsixinxiEntity> ew = new EntityWrapper<GongsixinxiEntity>();
+        ew.eq("gongsimingcheng", gongsixinxi.getGongsimingcheng());
+        List<GongsixinxiEntity> list = gongsixinxiService.selectList(ew);
+        if(list != null && list.size() > 0) {
+            return R.error("公司名称已存在");
+        }
+
         gongsixinxiService.insert(gongsixinxi);
-        return R.ok();
+        return R.ok("保存成功");
     }
 
 
@@ -159,31 +231,128 @@ public class GongsixinxiController {
     @RequestMapping("/update")
     @Transactional
     public R update(@RequestBody GongsixinxiEntity gongsixinxi, HttpServletRequest request){
-        //ValidatorUtils.validateEntity(gongsixinxi);
-        gongsixinxiService.updateById(gongsixinxi);//全部更新
-        return R.ok();
+        // 验证ID
+        if(gongsixinxi.getId() == null) {
+            return R.error("ID不能为空");
+        }
+
+        // 验证必填字段
+        if(StringUtils.isBlank(gongsixinxi.getGongsimingcheng())) {
+            return R.error("公司名称不能为空");
+        }
+
+        // 验证公司名称是否已存在（排除自己）
+        EntityWrapper<GongsixinxiEntity> ew = new EntityWrapper<GongsixinxiEntity>();
+        ew.eq("gongsimingcheng", gongsixinxi.getGongsimingcheng());
+        ew.ne("id", gongsixinxi.getId());
+        List<GongsixinxiEntity> list = gongsixinxiService.selectList(ew);
+        if(list != null && list.size() > 0) {
+            return R.error("公司名称已存在");
+        }
+
+        // 执行更新
+        gongsixinxiService.updateById(gongsixinxi);
+        return R.ok("修改成功");
     }
-
-
-    
 
     /**
      * 删除
      */
     @RequestMapping("/delete")
+    @Transactional
     public R delete(@RequestBody Long[] ids){
+        if(ids == null || ids.length == 0) {
+            return R.error("请选择要删除的数据");
+        }
+
         gongsixinxiService.deleteBatchIds(Arrays.asList(ids));
-        return R.ok();
+        return R.ok("删除成功");
     }
-    
-	
+
+    /**
+     * 根据ID删除
+     */
+    @RequestMapping("/delete/{id}")
+    @Transactional
+    public R deleteById(@PathVariable("id") Long id){
+        if(id == null) {
+            return R.error("ID不能为空");
+        }
+
+        GongsixinxiEntity gongsixinxi = gongsixinxiService.selectById(id);
+        if(gongsixinxi == null) {
+            return R.error("公司信息不存在");
+        }
+
+        gongsixinxiService.deleteById(id);
+        return R.ok("删除成功");
+    }
 
 
+    /**
+     * 根据条件查询总数
+     */
+    @RequestMapping("/count")
+    public R count(@RequestParam Map<String, Object> params, GongsixinxiEntity gongsixinxi){
+        EntityWrapper<GongsixinxiEntity> ew = new EntityWrapper<GongsixinxiEntity>();
+
+        // 构建查询条件
+        if(StringUtils.isNotBlank(gongsixinxi.getGongsimingcheng())) {
+            ew.like("gongsimingcheng", gongsixinxi.getGongsimingcheng());
+        }
+        if(StringUtils.isNotBlank(gongsixinxi.getGongsidizhi())) {
+            ew.like("gongsidizhi", gongsixinxi.getGongsidizhi());
+        }
+
+        int count = gongsixinxiService.selectCount(ew);
+        return R.ok().put("data", count);
+    }
+
+    /**
+     * 根据公司名称查询
+     */
+    @RequestMapping("/selectByName")
+    public R selectByName(@RequestParam String gongsimingcheng){
+        if(StringUtils.isBlank(gongsimingcheng)) {
+            return R.error("公司名称不能为空");
+        }
+
+        EntityWrapper<GongsixinxiEntity> ew = new EntityWrapper<GongsixinxiEntity>();
+        ew.eq("gongsimingcheng", gongsimingcheng);
+        GongsixinxiEntity gongsixinxi = gongsixinxiService.selectOne(ew);
+
+        if(gongsixinxi == null) {
+            return R.error("公司信息不存在");
+        }
+
+        return R.ok().put("data", gongsixinxi);
+    }
 
 
+    /**
+     * 模糊搜索（支持多个字段）
+     */
+    @RequestMapping("/search")
+    public R search(@RequestParam Map<String, Object> params){
+        String keyword = (String) params.get("keyword");
 
+        if(StringUtils.isBlank(keyword)) {
+            return R.error("搜索关键词不能为空");
+        }
 
+        EntityWrapper<GongsixinxiEntity> ew = new EntityWrapper<GongsixinxiEntity>();
+        ew.like("gongsimingcheng", keyword)
+                .or()
+                .like("gongsidizhi", keyword)
+                .or()
+                .like("jingyingfanwei", keyword)
+                .or()
+                .like("gongsijieshao", keyword);
 
+        PageUtils page = gongsixinxiService.queryPage(params, ew);
 
-
+        return R.ok().put("data", page);
+    }
 }
+
+

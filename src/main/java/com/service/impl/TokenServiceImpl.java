@@ -63,7 +63,10 @@ public class TokenServiceImpl extends ServiceImpl<TokenDao, TokenEntity> impleme
 			tokenEntity.setExpiratedtime(cal.getTime());
 			this.updateById(tokenEntity);
 		} else {
-			this.insert(new TokenEntity(userid,username, tableName, role, token, cal.getTime()));
+			TokenEntity newToken = new TokenEntity(userid,username, tableName, role, token, cal.getTime());
+			newToken.setId(new Date().getTime()+new Double(Math.floor(Math.random()*1000)).longValue());
+			newToken.setAddtime(new Date());
+			this.insert(newToken);
 		}
 		return token;
 	}

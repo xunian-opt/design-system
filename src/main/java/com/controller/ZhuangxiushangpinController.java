@@ -59,7 +59,6 @@ public class ZhuangxiushangpinController {
 
     
 
-
     /**
      * 后端列表
      */
@@ -69,11 +68,24 @@ public class ZhuangxiushangpinController {
                 @RequestParam(required = false) Double priceend,
 		HttpServletRequest request){
         EntityWrapper<ZhuangxiushangpinEntity> ew = new EntityWrapper<ZhuangxiushangpinEntity>();
-                if(pricestart!=null) ew.ge("price", pricestart);
-                if(priceend!=null) ew.le("price", priceend);
-
-		PageUtils page = zhuangxiushangpinService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, zhuangxiushangpin), params), params));
-
+        if(pricestart!=null) ew.ge("price", pricestart);
+        if(priceend!=null) ew.le("price", priceend);
+        if(StringUtils.isNotBlank(zhuangxiushangpin.getShangpinmingcheng())) {
+            ew.like("shangpinmingcheng", zhuangxiushangpin.getShangpinmingcheng());
+        }
+        if(StringUtils.isNotBlank(zhuangxiushangpin.getShangpinfenlei())) {
+            ew.like("shangpinfenlei", zhuangxiushangpin.getShangpinfenlei());
+        }
+        if(StringUtils.isNotBlank(zhuangxiushangpin.getShangpinpinpai())) {
+            ew.like("shangpinpinpai", zhuangxiushangpin.getShangpinpinpai());
+        }
+        String orderBy = (String) params.get("orderBy");
+        if(StringUtils.isNotBlank(orderBy)) {
+            ew.orderBy(orderBy);
+        } else {
+            ew.orderBy("addtime", false);
+        }
+		PageUtils page = zhuangxiushangpinService.queryPage(params, ew);
         return R.ok().put("data", page);
     }
     
@@ -121,9 +133,13 @@ public class ZhuangxiushangpinController {
     @RequestMapping("/info/{id}")
     public R info(@PathVariable("id") Long id){
         ZhuangxiushangpinEntity zhuangxiushangpin = zhuangxiushangpinService.selectById(id);
-		zhuangxiushangpin.setClicknum(zhuangxiushangpin.getClicknum()+1);
-		zhuangxiushangpin.setClicktime(new Date());
-		zhuangxiushangpinService.updateById(zhuangxiushangpin);
+        if(zhuangxiushangpin == null) {
+            return R.error("装修商品不存在");
+        }
+        Integer click = zhuangxiushangpin.getClicknum();
+        zhuangxiushangpin.setClicknum((click == null ? 0 : click) + 1);
+        zhuangxiushangpin.setClicktime(new Date());
+        zhuangxiushangpinService.updateById(zhuangxiushangpin);
         return R.ok().put("data", zhuangxiushangpin);
     }
 
@@ -134,13 +150,15 @@ public class ZhuangxiushangpinController {
     @RequestMapping("/detail/{id}")
     public R detail(@PathVariable("id") Long id){
         ZhuangxiushangpinEntity zhuangxiushangpin = zhuangxiushangpinService.selectById(id);
-		zhuangxiushangpin.setClicknum(zhuangxiushangpin.getClicknum()+1);
-		zhuangxiushangpin.setClicktime(new Date());
-		zhuangxiushangpinService.updateById(zhuangxiushangpin);
+        if(zhuangxiushangpin == null) {
+            return R.error("装修商品不存在");
+        }
+        Integer click = zhuangxiushangpin.getClicknum();
+        zhuangxiushangpin.setClicknum((click == null ? 0 : click) + 1);
+        zhuangxiushangpin.setClicktime(new Date());
+        zhuangxiushangpinService.updateById(zhuangxiushangpin);
         return R.ok().put("data", zhuangxiushangpin);
     }
-    
-
 
 
     /**
@@ -148,10 +166,20 @@ public class ZhuangxiushangpinController {
      */
     @RequestMapping("/save")
     public R save(@RequestBody ZhuangxiushangpinEntity zhuangxiushangpin, HttpServletRequest request){
-    	zhuangxiushangpin.setId(new Date().getTime()+new Double(Math.floor(Math.random()*1000)).longValue());
-    	//ValidatorUtils.validateEntity(zhuangxiushangpin);
+    	if(StringUtils.isBlank(zhuangxiushangpin.getShangpinmingcheng())) {
+            return R.error("商品名称不能为空");
+        }
+        zhuangxiushangpin.setId(new Date().getTime()+new Double(Math.floor(Math.random()*1000)).longValue());
+        zhuangxiushangpin.setAddtime(new Date());
+        if(zhuangxiushangpin.getClicknum() == null) zhuangxiushangpin.setClicknum(0);
+        EntityWrapper<ZhuangxiushangpinEntity> ew = new EntityWrapper<ZhuangxiushangpinEntity>();
+        ew.eq("shangpinmingcheng", zhuangxiushangpin.getShangpinmingcheng());
+        List<ZhuangxiushangpinEntity> exists = zhuangxiushangpinService.selectList(ew);
+        if(exists != null && exists.size() > 0) {
+            return R.error("该商品已存在");
+        }
         zhuangxiushangpinService.insert(zhuangxiushangpin);
-        return R.ok();
+        return R.ok("保存成功");
     }
     
     /**
@@ -159,10 +187,20 @@ public class ZhuangxiushangpinController {
      */
     @RequestMapping("/add")
     public R add(@RequestBody ZhuangxiushangpinEntity zhuangxiushangpin, HttpServletRequest request){
-    	zhuangxiushangpin.setId(new Date().getTime()+new Double(Math.floor(Math.random()*1000)).longValue());
-    	//ValidatorUtils.validateEntity(zhuangxiushangpin);
+    	if(StringUtils.isBlank(zhuangxiushangpin.getShangpinmingcheng())) {
+            return R.error("商品名称不能为空");
+        }
+        zhuangxiushangpin.setId(new Date().getTime()+new Double(Math.floor(Math.random()*1000)).longValue());
+        zhuangxiushangpin.setAddtime(new Date());
+        if(zhuangxiushangpin.getClicknum() == null) zhuangxiushangpin.setClicknum(0);
+        EntityWrapper<ZhuangxiushangpinEntity> ew = new EntityWrapper<ZhuangxiushangpinEntity>();
+        ew.eq("shangpinmingcheng", zhuangxiushangpin.getShangpinmingcheng());
+        List<ZhuangxiushangpinEntity> exists = zhuangxiushangpinService.selectList(ew);
+        if(exists != null && exists.size() > 0) {
+            return R.error("该商品已存在");
+        }
         zhuangxiushangpinService.insert(zhuangxiushangpin);
-        return R.ok();
+        return R.ok("保存成功");
     }
 
 
@@ -173,13 +211,23 @@ public class ZhuangxiushangpinController {
     @RequestMapping("/update")
     @Transactional
     public R update(@RequestBody ZhuangxiushangpinEntity zhuangxiushangpin, HttpServletRequest request){
-        //ValidatorUtils.validateEntity(zhuangxiushangpin);
-        zhuangxiushangpinService.updateById(zhuangxiushangpin);//全部更新
-        return R.ok();
+        if(zhuangxiushangpin.getId() == null) {
+            return R.error("ID不能为空");
+        }
+        if(StringUtils.isBlank(zhuangxiushangpin.getShangpinmingcheng())) {
+            return R.error("商品名称不能为空");
+        }
+        EntityWrapper<ZhuangxiushangpinEntity> ew = new EntityWrapper<ZhuangxiushangpinEntity>();
+        ew.eq("shangpinmingcheng", zhuangxiushangpin.getShangpinmingcheng());
+        ew.ne("id", zhuangxiushangpin.getId());
+        List<ZhuangxiushangpinEntity> exists = zhuangxiushangpinService.selectList(ew);
+        if(exists != null && exists.size() > 0) {
+            return R.error("该商品已存在");
+        }
+        zhuangxiushangpinService.updateById(zhuangxiushangpin);
+        return R.ok("修改成功");
     }
 
-
-    
 
     /**
      * 删除
@@ -218,9 +266,6 @@ public class ZhuangxiushangpinController {
 		PageUtils page = zhuangxiushangpinService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, zhuangxiushangpin), params), params));
         return R.ok().put("data", page);
     }
-
-
-
 
 
 

@@ -53,24 +53,38 @@ public class OrdersController {
     private OrdersService ordersService;
 
 
-    
-
-
     /**
      * 后端列表
      */
     @RequestMapping("/page")
-    public R page(@RequestParam Map<String, Object> params,OrdersEntity orders,
-		HttpServletRequest request){
-    	if(!request.getSession().getAttribute("role").toString().equals("管理员")) {
-    		orders.setUserid((Long)request.getSession().getAttribute("userId"));
-    	}
+    public R page(@RequestParam Map<String, Object> params, OrdersEntity orders,
+                  HttpServletRequest request){
+
+        // 修改处：增加空值判断，防止 NullPointerException
+        Object role = request.getSession().getAttribute("role");
+        if(role != null && !"管理员".equals(role.toString())) {
+            Object userId = request.getSession().getAttribute("userId");
+            if(userId != null){
+                orders.setUserid((Long)userId);
+            }
+        }
+
         EntityWrapper<OrdersEntity> ew = new EntityWrapper<OrdersEntity>();
 
-		PageUtils page = ordersService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, orders), params), params));
+        // 增加：模糊查询支持 (可选，建议加上以配合前端搜索)
+        String orderid = (String) params.get("orderid");
+        String goodname = (String) params.get("goodname");
+        if(StringUtils.isNotBlank(orderid)) ew.like("orderid", orderid);
+        if(StringUtils.isNotBlank(goodname)) ew.like("goodname", goodname);
+
+        // 增加：按时间倒序
+        ew.orderBy("id", false);
+
+        PageUtils page = ordersService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, orders), params), params));
 
         return R.ok().put("data", page);
     }
+
     
     /**
      * 前端列表
@@ -135,7 +149,12 @@ public class OrdersController {
     public R save(@RequestBody OrdersEntity orders, HttpServletRequest request){
     	orders.setId(new Date().getTime()+new Double(Math.floor(Math.random()*1000)).longValue());
     	//ValidatorUtils.validateEntity(orders);
-    	orders.setUserid((Long)request.getSession().getAttribute("userId"));
+        javax.servlet.http.HttpSession session = null;
+        try { session = request.getSession(false); } catch (Exception ignore) {}
+        Object userIdObj = session != null ? session.getAttribute("userId") : null;
+        if (userIdObj instanceof Long) {
+            orders.setUserid((Long) userIdObj);
+        }
         ordersService.insert(orders);
         return R.ok();
     }

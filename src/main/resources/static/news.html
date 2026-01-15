@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>装修资讯</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; margin: 0; padding: 0; background: #f6f7f9; }
+    .wrap { max-width: 960px; margin: 24px auto; padding: 0 16px; }
+    .btn { padding: 8px 12px; border: none; border-radius: 6px; background: #1677ff; color: #fff; cursor: pointer; }
+    table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 6px 20px rgba(0,0,0,0.06); }
+    th, td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+    th { background: #fafafa; text-align: left; }
+    a { color: #1677ff; text-decoration: none; }
+    .pager { margin-top: 12px; display: flex; gap: 8px; align-items: center; }
+    .msg { margin: 8px 0; font-size: 13px; color: #d4380d; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <h2>装修资讯</h2>
+      <div>
+        <button class="btn" onclick="prev()">上一页</button>
+        <button class="btn" onclick="next()">下一页</button>
+      </div>
+    </div>
+    <div id="msg" class="msg"></div>
+    <table>
+      <thead><tr><th>标题</th><th>简介</th><th>详情</th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="pager"><span id="pageInfo"></span></div>
+  </div>
+  <script>
+    const base = '/springboot2z04j';
+    let page = 1; const limit = 10;
+    function setMsg(text, ok) { const el = document.getElementById('msg'); el.style.color = ok ? '#389e0d' : '#d4380d'; el.textContent = text || ''; }
+    function prev() { if (page > 1) { page--; load(); } }
+    function next() { page++; load(); }
+    async function load() {
+      setMsg('');
+      try {
+        const res = await fetch(`${base}/news/list?page=${page}&limit=${limit}`);
+        const data = await res.json().catch(() => ({}));
+        if (!data || data.code !== 0) { setMsg((data && data.msg) || '加载失败'); return; }
+        const list = (data.data && data.data.list) || [];
+        const totalPage = (data.data && data.data.totalPage) || 1;
+        const currPage = (data.data && data.data.currPage) || page;
+        page = currPage;
+        const tbody = document.getElementById('tbody');
+        tbody.innerHTML = list.map(row => `
+          <tr>
+            <td>${row.title ?? ''}</td>
+            <td>${row.introduction ?? ''}</td>
+            <td><a href="news-detail.html?id=${row.id}">查看</a></td>
+          </tr>
+        `).join('');
+        document.getElementById('pageInfo').textContent = `第 ${currPage} / ${totalPage} 页`;
+        if (list.length === 0) setMsg('暂无数据', true);
+      } catch (e) { setMsg('网络错误，请稍后重试'); }
+    }
+    load();
+  </script>
+</body>
+</html>
+

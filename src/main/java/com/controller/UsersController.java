@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -57,6 +58,7 @@ public class UsersController {
         if (userService.selectOne(new EntityWrapper<UsersEntity>().eq("username", user.getUsername())) != null) {
             return R.error("用户已存在");
         }
+        user.setId(new Date().getTime() + new Double(Math.floor(Math.random() * 1000)).longValue());
         userService.insert(user);
         return R.ok();
     }
@@ -133,6 +135,7 @@ public class UsersController {
         if (userService.selectOne(new EntityWrapper<UsersEntity>().eq("username", user.getUsername())) != null) {
             return R.error("用户已存在");
         }
+        user.setId(new Date().getTime() + new Double(Math.floor(Math.random() * 1000)).longValue());
         userService.insert(user);
         return R.ok();
     }
@@ -144,7 +147,7 @@ public class UsersController {
     public R update(@RequestBody UsersEntity user) {
 //        ValidatorUtils.validateEntity(user);
         UsersEntity u = userService.selectOne(new EntityWrapper<UsersEntity>().eq("username", user.getUsername()));
-        if (u != null && u.getId() != user.getId() && u.getUsername().equals(user.getUsername())) {
+        if (u != null && u.getId() != null && !u.getId().equals(user.getId())) {
             return R.error("用户名已存在。");
         }
         userService.updateById(user);//全部更新

@@ -57,58 +57,86 @@ public class ZhuangxiuzuopinController {
     @Autowired
     private StoreupService storeupService;
 
-    
-
 
     /**
-     * 后端列表
+     * 后端列表 (分页 + 模糊查询)
+     * 对应前端: loadWorks()
      */
     @RequestMapping("/page")
-    public R page(@RequestParam Map<String, Object> params,ZhuangxiuzuopinEntity zhuangxiuzuopin,
-		HttpServletRequest request){
+    public R page(@RequestParam Map<String, Object> params, ZhuangxiuzuopinEntity zhuangxiuzuopin,
+                  HttpServletRequest request) {
         EntityWrapper<ZhuangxiuzuopinEntity> ew = new EntityWrapper<ZhuangxiuzuopinEntity>();
 
-		PageUtils page = zhuangxiuzuopinService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, zhuangxiuzuopin), params), params));
+        // 1. 获取查询参数
+        String zuopinmingcheng = (String) params.get("zuopinmingcheng");
+        String fenggeleixing = (String) params.get("fenggeleixing");
+
+        // 2. 构建模糊查询条件 (LIKE)
+        if (StringUtils.isNotBlank(zuopinmingcheng)) {
+            ew.like("zuopinmingcheng", zuopinmingcheng);
+        }
+        if (StringUtils.isNotBlank(fenggeleixing)) {
+            ew.like("fenggeleixing", fenggeleixing);
+        }
+
+        // 3. 排序：按 ID 倒序，保证新添加的在前面
+        ew.orderBy("id", false);
+
+        // 4. 执行分页查询
+        PageUtils page = zhuangxiuzuopinService.queryPage(params, ew);
 
         return R.ok().put("data", page);
     }
-    
+
     /**
-     * 前端列表
+     * 前端列表 (忽略权限，通常用于用户端展示)
      */
-	@IgnoreAuth
+    @IgnoreAuth
     @RequestMapping("/list")
-    public R list(@RequestParam Map<String, Object> params,ZhuangxiuzuopinEntity zhuangxiuzuopin, 
-		HttpServletRequest request){
+    public R list(@RequestParam Map<String, Object> params, ZhuangxiuzuopinEntity zhuangxiuzuopin,
+                  HttpServletRequest request){
         EntityWrapper<ZhuangxiuzuopinEntity> ew = new EntityWrapper<ZhuangxiuzuopinEntity>();
 
-		PageUtils page = zhuangxiuzuopinService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, zhuangxiuzuopin), params), params));
+        // 同样支持模糊查询
+        String zuopinmingcheng = (String) params.get("zuopinmingcheng");
+        String fenggeleixing = (String) params.get("fenggeleixing");
+
+        if (StringUtils.isNotBlank(zuopinmingcheng)) {
+            ew.like("zuopinmingcheng", zuopinmingcheng);
+        }
+        if (StringUtils.isNotBlank(fenggeleixing)) {
+            ew.like("fenggeleixing", fenggeleixing);
+        }
+        ew.orderBy("id", false);
+
+        PageUtils page = zhuangxiuzuopinService.queryPage(params, ew);
         return R.ok().put("data", page);
     }
 
-	/**
-     * 列表
+    /**
+     * 列表 (不分页，用于下拉框等)
      */
     @RequestMapping("/lists")
-    public R list( ZhuangxiuzuopinEntity zhuangxiuzuopin){
-       	EntityWrapper<ZhuangxiuzuopinEntity> ew = new EntityWrapper<ZhuangxiuzuopinEntity>();
-      	ew.allEq(MPUtil.allEQMapPre( zhuangxiuzuopin, "zhuangxiuzuopin")); 
+    public R list(ZhuangxiuzuopinEntity zhuangxiuzuopin){
+        EntityWrapper<ZhuangxiuzuopinEntity> ew = new EntityWrapper<ZhuangxiuzuopinEntity>();
+        ew.allEq(MPUtil.allEQMapPre(zhuangxiuzuopin, "zhuangxiuzuopin"));
         return R.ok().put("data", zhuangxiuzuopinService.selectListView(ew));
     }
 
-	 /**
-     * 查询
+    /**
+     * 查询单个视图对象
      */
     @RequestMapping("/query")
     public R query(ZhuangxiuzuopinEntity zhuangxiuzuopin){
-        EntityWrapper< ZhuangxiuzuopinEntity> ew = new EntityWrapper< ZhuangxiuzuopinEntity>();
- 		ew.allEq(MPUtil.allEQMapPre( zhuangxiuzuopin, "zhuangxiuzuopin")); 
-		ZhuangxiuzuopinView zhuangxiuzuopinView =  zhuangxiuzuopinService.selectView(ew);
-		return R.ok("查询装修作品成功").put("data", zhuangxiuzuopinView);
+        EntityWrapper<ZhuangxiuzuopinEntity> ew = new EntityWrapper<ZhuangxiuzuopinEntity>();
+        ew.allEq(MPUtil.allEQMapPre(zhuangxiuzuopin, "zhuangxiuzuopin"));
+        ZhuangxiuzuopinView zhuangxiuzuopinView = zhuangxiuzuopinService.selectView(ew);
+        return R.ok("查询装修作品成功").put("data", zhuangxiuzuopinView);
     }
-	
+
     /**
      * 后端详情
+     * 对应前端: viewDetail(id) 和 editWork(id) 回显
      */
     @RequestMapping("/info/{id}")
     public R info(@PathVariable("id") Long id){
@@ -119,67 +147,65 @@ public class ZhuangxiuzuopinController {
     /**
      * 前端详情
      */
-	@IgnoreAuth
+    @IgnoreAuth
     @RequestMapping("/detail/{id}")
     public R detail(@PathVariable("id") Long id){
         ZhuangxiuzuopinEntity zhuangxiuzuopin = zhuangxiuzuopinService.selectById(id);
         return R.ok().put("data", zhuangxiuzuopin);
     }
-    
-
-
 
     /**
-     * 后端保存
+     * 后端保存 (新增)
+     * 对应前端: saveWork() -> add
      */
     @RequestMapping("/save")
     public R save(@RequestBody ZhuangxiuzuopinEntity zhuangxiuzuopin, HttpServletRequest request){
-    	zhuangxiuzuopin.setId(new Date().getTime()+new Double(Math.floor(Math.random()*1000)).longValue());
-    	//ValidatorUtils.validateEntity(zhuangxiuzuopin);
+        // 生成唯一ID (时间戳+随机数)
+        zhuangxiuzuopin.setId(new Date().getTime() + new Double(Math.floor(Math.random()*1000)).longValue());
+
+        // 设置添加时间 (如果前端没传)
+        if (zhuangxiuzuopin.getAddtime() == null) {
+            zhuangxiuzuopin.setAddtime(new Date());
+        }
+
         zhuangxiuzuopinService.insert(zhuangxiuzuopin);
         return R.ok();
     }
-    
+
     /**
-     * 前端保存
+     * 前端保存 (通常用于用户投稿)
      */
     @RequestMapping("/add")
     public R add(@RequestBody ZhuangxiuzuopinEntity zhuangxiuzuopin, HttpServletRequest request){
-    	zhuangxiuzuopin.setId(new Date().getTime()+new Double(Math.floor(Math.random()*1000)).longValue());
-    	//ValidatorUtils.validateEntity(zhuangxiuzuopin);
+        zhuangxiuzuopin.setId(new Date().getTime() + new Double(Math.floor(Math.random()*1000)).longValue());
+        if (zhuangxiuzuopin.getAddtime() == null) {
+            zhuangxiuzuopin.setAddtime(new Date());
+        }
         zhuangxiuzuopinService.insert(zhuangxiuzuopin);
         return R.ok();
     }
 
-
-
     /**
      * 修改
+     * 对应前端: saveWork() -> edit
      */
     @RequestMapping("/update")
     @Transactional
     public R update(@RequestBody ZhuangxiuzuopinEntity zhuangxiuzuopin, HttpServletRequest request){
-        //ValidatorUtils.validateEntity(zhuangxiuzuopin);
-        zhuangxiuzuopinService.updateById(zhuangxiuzuopin);//全部更新
+        // updateById 会根据 ID 更新非空字段
+        zhuangxiuzuopinService.updateById(zhuangxiuzuopin);
         return R.ok();
     }
 
-
-    
-
     /**
      * 删除
+     * 对应前端: deleteWork() / deleteSelected()
      */
     @RequestMapping("/delete")
     public R delete(@RequestBody Long[] ids){
         zhuangxiuzuopinService.deleteBatchIds(Arrays.asList(ids));
         return R.ok();
     }
-    
-	
-
-
-
 
 
 

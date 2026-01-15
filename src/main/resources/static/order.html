@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>订单管理 - 装修公司管理系统</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft YaHei", sans-serif;
+      background: #f0f2f5;
+      min-height: 100vh;
+    }
+    
+    /* 顶部导航栏 */
+    .top-bar {
+      height: 60px;
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+    }
+    
+    .top-bar h1 {
+      font-size: 20px;
+      font-weight: 600;
+    }
+    
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+    }
+    
+    .user-info button {
+      padding: 6px 16px;
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .user-info button:hover {
+      background: rgba(255,255,255,0.3);
+    }
+    
+    /* 主容器 */
+    .main-container {
+      display: flex;
+      margin-top: 60px;
+      min-height: calc(100vh - 60px);
+    }
+    
+    /* 侧边栏 */
+    .sidebar {
+      width: 220px;
+      background: #001529;
+      color: white;
+      flex-shrink: 0;
+      overflow-y: auto;
+    }
+    
+    .menu-item {
+      padding: 16px 24px;
+      cursor: pointer;
+      transition: all 0.3s;
+      border-left: 3px solid transparent;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+    }
+    
+    .menu-item:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    
+    .menu-item.active {
+      background: #1890ff;
+      border-left-color: #40a9ff;
+    }
+    
+    .menu-item .icon {
+      width: 16px;
+      height: 16px;
+      display: inline-block;
+    }
+    
+    .menu-group {
+      margin-top: 8px;
+    }
+    
+    .menu-group-title {
+      padding: 16px 24px 8px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+      text-transform: uppercase;
+    }
+    
+    .submenu {
+      padding-left: 48px;
+    }
+    
+    /* 主内容区 */
+    .content {
+      flex: 1;
+      padding: 24px;
+      overflow-y: auto;
+    }
+    
+    /* 面包屑 */
+    .breadcrumb {
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: #666;
+    }
+    
+    .breadcrumb span {
+      color: #1890ff;
+    }
+    
+    /* 内容卡片 */
+    .content-card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      padding: 24px;
+    }
+    
+    /* 搜索栏 */
+    .search-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      align-items: flex-end;
+    }
+    
+    .search-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    
+    .search-field label {
+      font-size: 14px;
+      color: #333;
+    }
+    
+    .search-field input {
+      padding: 8px 12px;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      font-size: 14px;
+      width: 200px;
+      outline: none;
+      transition: all 0.3s;
+    }
+    
+    .search-field input:focus {
+      border-color: #1890ff;
+      box-shadow: 0 0 0 2px rgba(24,144,255,0.1);
+    }
+    
+    /* 工具栏 */
+    .toolbar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .btn-primary {
+      background: #1890ff;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #40a9ff;
+    }
+    
+    .btn-danger {
+      background: #ff4d4f;
+      color: white;
+    }
+    
+    .btn-danger:hover {
+      background: #ff7875;
+    }
+    
+    .btn-search {
+      background: #1890ff;
+      color: white;
+      margin-top: 24px;
+    }
+    
+    /* 表格 */
+    .table-container {
+      overflow-x: auto;
+      margin-bottom: 20px;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    
+    thead {
+      background: #fafafa;
+    }
+    
+    th {
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 600;
+      color: #333;
+      border-bottom: 1px solid #f0f0f0;
+      white-space: nowrap;
+    }
+    
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid #f0f0f0;
+      color: #666;
+      vertical-align: middle;
+    }
+    
+    tbody tr {
+      transition: background 0.3s;
+    }
+    
+    tbody tr:hover {
+      background: #fafafa;
+    }
+    
+    .goods-img {
+      width: 60px;
+      height: 60px;
+      border-radius: 4px;
+      object-fit: cover;
+    }
+    
+    .action-btns {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .btn-sm {
+      padding: 4px 12px;
+      font-size: 13px;
+    }
+    
+    .btn-success {
+      background: #52c41a;
+      color: white;
+    }
+    
+    .btn-success:hover {
+      background: #73d13d;
+    }
+    
+    .btn-info {
+      background: #1890ff;
+      color: white;
+    }
+    
+    .btn-info:hover {
+      background: #40a9ff;
+    }
+    
+    /* 分页 */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      margin-top: 20px;
+    }
+    
+    .pagination button {
+      padding: 6px 12px;
+      border: 1px solid #d9d9d9;
+      background: white;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .pagination button:hover:not(:disabled) {
+      border-color: #1890ff;
+      color: #1890ff;
+    }
+    
+    .pagination button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .page-info {
+      color: #666;
+      font-size: 14px;
+    }
+    
+    /* 消息提示 */
+    .msg {
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      display: none;
+    }
+    
+    .msg.show {
+      display: block;
+      animation: fadeIn 0.3s;
+    }
+    
+    .msg.error {
+      background: #fff1f0;
+      border: 1px solid #ffccc7;
+      color: #cf1322;
+    }
+    
+    .msg.success {
+      background: #f6ffed;
+      border: 1px solid #b7eb8f;
+      color: #389e0d;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* 复选框 */
+    input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+    
+    /* 弹窗样式 */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal.show { display: flex; }
+    .modal-content {
+      background: white;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 800px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-header {
+      padding: 20px 30px;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-header h3 { font-size: 18px; color: #111827; }
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #6b7280;
+      padding: 0;
+      width: 30px;
+      height: 30px;
+    }
+    .modal-body { padding: 30px; }
+    .modal-form {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+    .modal-form .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .modal-form .form-group.full-width { grid-column: 1 / -1; }
+    .modal-form input, .modal-form select, .modal-form textarea {
+      padding: 8px 12px;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      font-size: 14px;
+      outline: none;
+    }
+    .modal-footer {
+      padding: 20px 30px;
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .btn-cancel {
+      padding: 8px 16px;
+      border: 1px solid #d9d9d9;
+      background: white;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    /* 响应式 */
+    @media (max-width: 768px) {
+      .sidebar {
+        position: fixed;
+        left: -220px;
+        height: calc(100vh - 60px);
+        transition: left 0.3s;
+        z-index: 100;
+      }
+      
+      .sidebar.open {
+        left: 0;
+      }
+      
+      .search-bar {
+        flex-direction: column;
+      }
+      
+      .search-field input {
+        width: 100%;
+      }
+      
+      .modal-form {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <h1>装修公司管理系统</h1>
+    <div class="user-info">
+      <span>管理员: admin</span>
+      <button onclick="logout()">退出登录</button>
+    </div>
+  </div>
+  
+  <div class="main-container">
+    <div class="sidebar">
+      <div class="menu-item" onclick="navigate('index.html')">
+        <span class="icon">🏠</span>
+        <span>系统首页</span>
+      </div>
+      
+      <div class="menu-group">
+        <div class="menu-group-title">系统管理</div>
+        <div class="menu-item" onclick="navigate('profile.html')">
+          <span class="icon">👤</span>
+          <span>个人中心</span>
+        </div>
+        <div class="menu-item" onclick="navigate('users.html')">
+          <span class="icon">👥</span>
+          <span>用户管理</span>
+        </div>
+        <div class="submenu menu-item" onclick="navigate('users.html')">
+          <span>用户</span>
+        </div>
+      </div>
+      
+      <div class="menu-group">
+        <div class="menu-group-title">业务管理</div>
+        <div class="menu-item" onclick="navigate('employees.html')">
+          <span class="icon">👷</span>
+          <span>员工信息管理</span>
+        </div>
+        <div class="menu-item">
+          <span class="icon">🏢</span>
+          <span>公司信息管理</span>
+        </div>
+        <div class="menu-item">
+          <span class="icon">📦</span>
+          <span>商品分类管理</span>
+        </div>
+        <div class="menu-item">
+          <span class="icon">🛍️</span>
+          <span>装修商品管理</span>
+        </div>
+        <div class="menu-item">
+          <span class="icon">🎨</span>
+          <span>装修作品管理</span>
+        </div>
+        <div class="menu-item">
+          <span class="icon">⚙️</span>
+          <span>系统管理</span>
+        </div>
+        <div class="menu-item active">
+          <span class="icon">📝</span>
+          <span>订单管理</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="content">
+      <div class="breadcrumb">
+        系统首页 / <span>订单管理</span>
+      </div>
+      
+      <div class="content-card">
+        <div class="search-bar">
+          <div class="search-field">
+            <label>订单编号</label>
+            <input type="text" id="searchOrderId" placeholder="请输入订单编号" />
+          </div>
+          <div class="search-field">
+            <label>商品名称</label>
+            <input type="text" id="searchGoodName" placeholder="请输入商品名称" />
+          </div>
+          <button class="btn btn-search" onclick="searchOrders()">查询</button>
+        </div>
+        
+        <div class="toolbar">
+          <button class="btn btn-primary" onclick="addOrder()">新增</button>
+          <button class="btn btn-danger" onclick="deleteSelected()">删除选中</button>
+          <button class="btn btn-danger" onclick="resetSearch()">重置</button>
+        </div>
+        
+        <div id="msg" class="msg"></div>
+        
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll()" /></th>
+                <th>索引</th>
+                <th>订单编号</th>
+                <th>商品名称</th>
+                <th>商品图片</th>
+                <th>购买数量</th>
+                <th>总价格</th>
+                <th>收货人</th>
+                <th>联系电话</th>
+                <th>地址</th>
+                <th>状态</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="tbody">
+              </tbody>
+          </table>
+        </div>
+        
+        <div class="pagination">
+          <button onclick="prevPage()" id="prevBtn">上一页</button>
+          <span class="page-info" id="pageInfo">第 1 / 1 页</span>
+          <button onclick="nextPage()" id="nextBtn">下一页</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div id="orderModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="orderModalTitle">新增订单</h3>
+        <button class="modal-close" onclick="closeOrderModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-form">
+          <div class="form-group">
+            <label>订单编号</label>
+            <input type="text" id="o_orderid" placeholder="系统自动生成" />
+          </div>
+          <div class="form-group">
+            <label>商品名称</label>
+            <input type="text" id="o_goodname" placeholder="请输入商品名称" />
+          </div>
+          <div class="form-group">
+            <label>购买数量</label>
+            <input type="number" id="o_buynumber" placeholder="请输入购买数量" />
+          </div>
+           <div class="form-group">
+            <label>商品价格</label>
+            <input type="number" id="o_price" placeholder="请输入单价" />
+          </div>
+          <div class="form-group">
+            <label>总价格</label>
+            <input type="number" id="o_total" placeholder="请输入总价格" />
+          </div>
+          <div class="form-group">
+            <label>状态</label>
+            <input type="text" id="o_status" placeholder="例如: 已支付/已发货" />
+          </div>
+          <div class="form-group">
+            <label>收货人</label>
+            <input type="text" id="o_consignee" placeholder="请输入收货人姓名" />
+          </div>
+          <div class="form-group">
+            <label>联系电话</label>
+            <input type="text" id="o_tel" placeholder="请输入联系电话" />
+          </div>
+           <div class="form-group">
+            <label>物流信息</label>
+            <input type="text" id="o_logistics" placeholder="请输入物流信息" />
+          </div>
+          <div class="form-group full-width">
+            <label>收货地址</label>
+            <input type="text" id="o_address" placeholder="请输入详细地址" />
+          </div>
+          <div class="form-group full-width">
+            <label>图片地址</label>
+            <input type="text" id="o_picture" placeholder="请输入图片URL" />
+          </div>
+           <div class="form-group full-width">
+            <label>备注</label>
+            <textarea id="o_remark" placeholder="订单备注" style="height: 60px;"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" id="orderModalFooter">
+        <button class="btn-cancel" onclick="closeOrderModal()">取消</button>
+        <button class="btn btn-primary" onclick="saveOrder()">保存</button>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const base = '/springboot2z04j';
+    let page = 1;
+    const limit = 10;
+    let totalPage = 1;
+    let selectedIds = new Set();
+    let currentOrder = null;
+    let orderModalMode = 'add';
+    
+    function navigate(link) {
+      window.location.href = link;
+    }
+    
+    // 设置消息
+    function setMsg(text, type) {
+      const el = document.getElementById('msg');
+      if (!text) {
+        el.className = 'msg';
+        el.textContent = '';
+        return;
+      }
+      el.textContent = text;
+      el.className = `msg ${type} show`;
+      setTimeout(() => {
+        el.className = 'msg';
+      }, 3000);
+    }
+    
+    // 退出登录
+    function logout() {
+      try {
+        localStorage.removeItem('token');
+      } catch (e) {
+        console.warn('localStorage not available');
+      }
+      window.location.href = 'index.html';
+    }
+    
+    // 加载订单列表
+    async function loadOrders() {
+      setMsg('');
+      let token;
+      try {
+        token = localStorage.getItem('token');
+      } catch (e) {
+        console.warn('localStorage not available');
+      }
+      
+      if (!token) {
+        setMsg('未登录或会话过期', 'error');
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 1500);
+        return;
+      }
+      
+      try {
+        const orderid = document.getElementById('searchOrderId').value.trim();
+        const goodname = document.getElementById('searchGoodName').value.trim();
+        let url = `${base}/orders/page?page=${page}&limit=${limit}`;
+        if (orderid) url += `&orderid=${encodeURIComponent(orderid)}`;
+        if (goodname) url += `&goodname=${encodeURIComponent(goodname)}`;
+        
+        const res = await fetch(url, {
+          headers: { 'Token': token }
+        });
+        
+        const data = await res.json().catch(() => ({}));
+        
+        if (!data || data.code !== 0) {
+          setMsg((data && data.msg) || '加载失败', 'error');
+          if (data && data.code === 401) {
+            try {
+              localStorage.removeItem('token');
+            } catch (e) {}
+            setTimeout(() => {
+              window.location.href = 'index.html';
+            }, 1500);
+          }
+          return;
+        }
+        
+        const list = (data.data && data.data.list) || [];
+        totalPage = (data.data && data.data.totalPage) || 1;
+        const currPage = (data.data && data.data.currPage) || page;
+        page = currPage;
+        window._ordersCache = list;
+        
+        renderTable(list);
+        updatePagination();
+        
+        if (list.length === 0) {
+          setMsg('暂无数据', 'success');
+        }
+      } catch (e) {
+        console.error('Load error:', e);
+        setMsg('网络错误，请稍后重试', 'error');
+      }
+    }
+    
+    // 渲染表格
+    function renderTable(list) {
+      const tbody = document.getElementById('tbody');
+      if (list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;color:#999;">暂无数据</td></tr>';
+        return;
+      }
+      
+      tbody.innerHTML = list.map((row, index) => `
+        <tr>
+          <td><input type="checkbox" value="${row.id}" onchange="toggleSelect(${row.id})" ${selectedIds.has(row.id) ? 'checked' : ''} /></td>
+          <td>${(page - 1) * limit + index + 1}</td>
+          <td>${row.orderid || ''}</td>
+          <td>${row.goodname || ''}</td>
+          <td>${row.picture ? `<img src="${row.picture}" class="goods-img" alt="商品图片" />` : '<div style="width:60px;height:60px;background:#f0f0f0;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#999;">无</div>'}</td>
+          <td>${row.buynumber || 0}</td>
+          <td>${row.total || 0}</td>
+          <td>${row.consignee || ''}</td>
+          <td>${row.tel || ''}</td>
+          <td>${row.address || ''}</td>
+          <td>${row.status || ''}</td>
+          <td>
+            <div class="action-btns">
+              <button class="btn btn-sm btn-success" onclick="viewDetail(${row.id})">详情</button>
+              <button class="btn btn-sm btn-info" onclick="editOrder(${row.id})">修改</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteOrder(${row.id})">删除</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+    
+    // 更新分页信息
+    function updatePagination() {
+      document.getElementById('pageInfo').textContent = `第 ${page} / ${totalPage} 页`;
+      document.getElementById('prevBtn').disabled = page <= 1;
+      document.getElementById('nextBtn').disabled = page >= totalPage;
+    }
+    
+    // 上一页
+    function prevPage() {
+      if (page > 1) {
+        page--;
+        loadOrders();
+      }
+    }
+    
+    // 下一页
+    function nextPage() {
+      if (page < totalPage) {
+        page++;
+        loadOrders();
+      }
+    }
+    
+    // 重置搜索
+    function resetSearch() {
+      document.getElementById('searchOrderId').value = '';
+      document.getElementById('searchGoodName').value = '';
+      page = 1;
+      loadOrders();
+      setMsg('搜索条件已重置', 'success');
+    }
+    
+    // 搜索
+    function searchOrders() {
+      page = 1;
+      loadOrders();
+    }
+    
+    // 切换全选
+    function toggleSelectAll() {
+      const checked = document.getElementById('selectAll').checked;
+      const checkboxes = document.querySelectorAll('tbody input[type="checkbox"]');
+      checkboxes.forEach(cb => {
+        cb.checked = checked;
+        const id = parseInt(cb.value);
+        if (checked) {
+          selectedIds.add(id);
+        } else {
+          selectedIds.delete(id);
+        }
+      });
+    }
+    
+    // 切换单个选择
+    function toggleSelect(id) {
+      if (selectedIds.has(id)) {
+        selectedIds.delete(id);
+      } else {
+        selectedIds.add(id);
+      }
+    }
+    
+    function openOrderModal(mode, id = null) {
+      orderModalMode = mode;
+      const modal = document.getElementById('orderModal');
+      const title = document.getElementById('orderModalTitle');
+      const footer = document.getElementById('orderModalFooter');
+      
+      if (mode === 'add') {
+        title.textContent = '新增订单';
+        clearOrderForm();
+        setOrderFormDisabled(false);
+        footer.style.display = 'flex';
+        currentOrder = null;
+      } else if (mode === 'edit') {
+        title.textContent = '修改订单信息';
+        currentOrder = null;
+        clearOrderForm();
+        const item = (window._ordersCache || []).find(o => o.id === id);
+        if (item) {
+          currentOrder = item;
+          fillOrderForm(item);
+        }
+        setOrderFormDisabled(false);
+        // 通常订单ID不允许修改
+        document.getElementById('o_orderid').disabled = true;
+        footer.style.display = 'flex';
+      } else {
+        title.textContent = '订单详情';
+        const item = (window._ordersCache || []).find(o => o.id === id);
+        currentOrder = item || null;
+        fillOrderForm(item || {});
+        setOrderFormDisabled(true);
+        footer.style.display = 'none';
+      }
+      modal.classList.add('show');
+    }
+    
+    function closeOrderModal() {
+      document.getElementById('orderModal').classList.remove('show');
+      clearOrderForm();
+      currentOrder = null;
+    }
+    
+    function fillOrderForm(o) {
+      document.getElementById('o_orderid').value = o.orderid || '';
+      document.getElementById('o_goodname').value = o.goodname || '';
+      document.getElementById('o_buynumber').value = o.buynumber || '';
+      document.getElementById('o_price').value = o.price || '';
+      document.getElementById('o_total').value = o.total || '';
+      document.getElementById('o_status').value = o.status || '';
+      document.getElementById('o_consignee').value = o.consignee || '';
+      document.getElementById('o_tel').value = o.tel || '';
+      document.getElementById('o_address').value = o.address || '';
+      document.getElementById('o_picture').value = o.picture || '';
+      document.getElementById('o_logistics').value = o.logistics || '';
+      document.getElementById('o_remark').value = o.remark || '';
+    }
+    
+    function clearOrderForm() {
+      document.getElementById('o_orderid').value = '';
+      document.getElementById('o_goodname').value = '';
+      document.getElementById('o_buynumber').value = '';
+      document.getElementById('o_price').value = '';
+      document.getElementById('o_total').value = '';
+      document.getElementById('o_status').value = '';
+      document.getElementById('o_consignee').value = '';
+      document.getElementById('o_tel').value = '';
+      document.getElementById('o_address').value = '';
+      document.getElementById('o_picture').value = '';
+      document.getElementById('o_logistics').value = '';
+      document.getElementById('o_remark').value = '';
+    }
+    
+    function setOrderFormDisabled(disabled) {
+      document.getElementById('o_orderid').disabled = disabled;
+      document.getElementById('o_goodname').disabled = disabled;
+      document.getElementById('o_buynumber').disabled = disabled;
+      document.getElementById('o_price').disabled = disabled;
+      document.getElementById('o_total').disabled = disabled;
+      document.getElementById('o_status').disabled = disabled;
+      document.getElementById('o_consignee').disabled = disabled;
+      document.getElementById('o_tel').disabled = disabled;
+      document.getElementById('o_address').disabled = disabled;
+      document.getElementById('o_picture').disabled = disabled;
+      document.getElementById('o_logistics').disabled = disabled;
+      document.getElementById('o_remark').disabled = disabled;
+    }
+    
+    function addOrder() { openOrderModal('add'); }
+    
+    function viewDetail(id) { openOrderModal('view', id); }
+    
+    function editOrder(id) { openOrderModal('edit', id); }
+    
+    async function saveOrder() {
+      // 收集表单数据
+      const orderid = document.getElementById('o_orderid').value.trim();
+      const goodname = document.getElementById('o_goodname').value.trim();
+      
+      if (orderModalMode === 'edit' && !goodname) {
+          setMsg('商品名称不能为空', 'error');
+          return;
+      }
+      
+      let token = '';
+      try { token = localStorage.getItem('token') || ''; } catch(e) {}
+      if (!token) {
+        setMsg('未登录或会话过期', 'error');
+        setTimeout(() => { window.location.href = 'index.html'; }, 1200);
+        return;
+      }
+      
+      const payload = {
+        orderid: orderid,
+        goodname: goodname,
+        buynumber: document.getElementById('o_buynumber').value,
+        price: document.getElementById('o_price').value,
+        total: document.getElementById('o_total').value,
+        status: document.getElementById('o_status').value,
+        consignee: document.getElementById('o_consignee').value,
+        tel: document.getElementById('o_tel').value,
+        address: document.getElementById('o_address').value,
+        picture: document.getElementById('o_picture').value,
+        logistics: document.getElementById('o_logistics').value,
+        remark: document.getElementById('o_remark').value
+      };
+      
+      let url = `${base}/orders/save`;
+      if (orderModalMode === 'edit' && currentOrder && currentOrder.id != null) {
+        url = `${base}/orders/update`;
+        payload.id = currentOrder.id;
+      }
+      
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Token': token, 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!data || data.code !== 0) {
+          setMsg((data && data.msg) || '操作失败', 'error');
+          if (data && data.code === 401) {
+            try { localStorage.removeItem('token'); } catch(e) {}
+            setTimeout(() => { window.location.href = 'index.html'; }, 1200);
+          }
+          return;
+        }
+        setMsg(orderModalMode === 'edit' ? '修改成功！' : '添加成功！', 'success');
+        closeOrderModal();
+        loadOrders();
+      } catch (e) {
+        setMsg('网络错误，请稍后重试', 'error');
+      }
+    }
+    
+    async function deleteOrder(id) {
+      if (!confirm('确定要删除该订单吗?')) return;
+      let token = '';
+      try { token = localStorage.getItem('token') || ''; } catch(e) {}
+      if (!token) {
+        setMsg('未登录或会话过期', 'error');
+        setTimeout(() => { window.location.href = 'index.html'; }, 1200);
+        return;
+      }
+      try {
+        const url = `${base}/orders/delete`;
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Token': token, 'Content-Type': 'application/json' },
+          body: JSON.stringify([id])
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!data || data.code !== 0) {
+          setMsg((data && data.msg) || '删除失败', 'error');
+          if (data && data.code === 401) {
+            try { localStorage.removeItem('token'); } catch(e) {}
+            setTimeout(() => { window.location.href = 'index.html'; }, 1200);
+          }
+          return;
+        }
+        setMsg('删除成功！', 'success');
+        loadOrders();
+      } catch (e) {
+        setMsg('网络错误，请稍后重试', 'error');
+      }
+    }
+    
+    async function deleteSelected() {
+      if (selectedIds.size === 0) {
+        setMsg('请先选择要删除的订单', 'error');
+        return;
+      }
+      if (!confirm(`确定要删除选中的 ${selectedIds.size} 个订单吗?`)) return;
+      let token = '';
+      try { token = localStorage.getItem('token') || ''; } catch(e) {}
+      if (!token) {
+        setMsg('未登录或会话过期', 'error');
+        setTimeout(() => { window.location.href = 'index.html'; }, 1200);
+        return;
+      }
+      try {
+        const url = `${base}/orders/delete`;
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Token': token, 'Content-Type': 'application/json' },
+          body: JSON.stringify(Array.from(selectedIds))
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!data || data.code !== 0) {
+          setMsg((data && data.msg) || '删除失败', 'error');
+          if (data && data.code === 401) {
+            try { localStorage.removeItem('token'); } catch(e) {}
+            setTimeout(() => { window.location.href = 'index.html'; }, 1200);
+          }
+          return;
+        }
+        setMsg('删除成功！', 'success');
+        selectedIds.clear();
+        loadOrders();
+      } catch (e) {
+        setMsg('网络错误，请稍后重试', 'error');
+      }
+    }
+    
+    // 页面加载时执行
+    loadOrders();
+  </script>
+</body>
+</html>

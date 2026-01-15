@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>资讯详情</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; margin: 0; padding: 0; background: #f6f7f9; }
+    .wrap { max-width: 720px; margin: 24px auto; padding: 16px; background: #fff; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.06); }
+    h2 { margin: 0 0 12px; }
+    .row { margin: 8px 0; }
+    .back { display: inline-block; margin-bottom: 8px; color: #1677ff; text-decoration: none; }
+    img { max-width: 100%; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="news.html">返回列表</a>
+    <h2 id="title"></h2>
+    <div class="row" id="intro"></div>
+    <div class="row" id="content"></div>
+    <div class="row"><img id="picture" /></div>
+  </div>
+  <script>
+    const base = '/springboot2z04j';
+    function qs(name) { const u = new URL(location.href); return u.searchParams.get(name); }
+    async function load() {
+      const id = qs('id'); if (!id) { location.href = 'news.html'; return; }
+      const res = await fetch(`${base}/news/detail/${id}`);
+      const data = await res.json().catch(() => ({}));
+      const row = (data && data.data) || {};
+      document.getElementById('title').textContent = row.title ?? '';
+      document.getElementById('intro').textContent = row.introduction ?? '';
+      document.getElementById('content').innerHTML = row.content ?? '';
+      const img = document.getElementById('picture');
+      img.src = row.picture ? `upload/${row.picture}` : '';
+      img.style.display = row.picture ? 'block' : 'none';
+    }
+    load();
+  </script>
+</body>
+</html>
+
