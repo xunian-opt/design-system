@@ -33,7 +33,7 @@ mysql (17张表)
 ### 前台
 
 ```
-http://localhost:8080/springboot2z04j/front/dist/index.html#
+http://localhost:8080/springboot2z04j/front/index.html
 
 账号 用户名2
 密码 123456
@@ -42,7 +42,7 @@ http://localhost:8080/springboot2z04j/front/dist/index.html#
 ### 后台
 
 ```
-http://localhost:8080/springboot2z04j/admin/dist/index.html#
+ http://localhost:8080/springboot2z04j/index.html
 
 账号 admin
 密码 123456
