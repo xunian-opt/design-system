@@ -37,6 +37,14 @@
     .btn-sm { padding: 4px 12px; font-size: 12px; }
     .btn-info { background: #1890ff; } .btn-info:hover { background: #40a9ff; }
     .btn-success { background: #52c41a; } .btn-success:hover { background: #73d13d; }
+    .btn-danger { background: #ff4d4f; } .btn-danger:hover { background: #ff7875; }
+    
+    /* 消息提示框 */
+    .msg { padding: 12px 16px; border-radius: 4px; margin-bottom: 16px; font-size: 14px; display: none; }
+    .msg.show { display: block; animation: fadeIn 0.3s; }
+    .msg.error { background: #fff1f0; border: 1px solid #ffccc7; color: #cf1322; }
+    .msg.success { background: #f6ffed; border: 1px solid #b7eb8f; color: #389e0d; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     
     /* 模态框 */
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; }
@@ -48,14 +56,16 @@
     .modal-body { padding: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
     .form-group { display: flex; flex-direction: column; gap: 6px; }
     .form-group label { font-size: 14px; color: #333; }
-    .form-group input { padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; outline: none; width: 100%; }
+    .form-group input { width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; outline: none; }
     .modal-footer { padding: 20px; border-top: 1px solid #f0f0f0; text-align: right; }
     .btn-cancel { background: white; border: 1px solid #d9d9d9; color: #666; margin-right: 8px; } .btn-cancel:hover { color: #333; border-color: #999; }
     
     .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 20px; }
     .pagination button { padding: 6px 12px; border: 1px solid #d9d9d9; background: white; border-radius: 4px; cursor: pointer; color: #666; }
     .pagination button:hover:not(:disabled) { border-color: #1890ff; color: #1890ff; }
+    .pagination button:disabled { opacity: 0.5; cursor: not-allowed; }
     .page-info { color: #666; font-size: 14px; }
+    input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -68,8 +78,12 @@
             <label>订单编号</label>
             <input type="text" id="searchOrderId" placeholder="请输入订单号">
           </div>
+          <div class="search-field">
+            <label>商品名称</label>
+            <input type="text" id="searchGoodName" placeholder="请输入商品名称">
+          </div>
           <button class="btn btn-search" onclick="load()">查询</button>
-          <button class="btn btn-danger" style="background:#ff4d4f" onclick="resetSearch()">重置</button>
+          <button class="btn btn-danger" onclick="resetSearch()">重置</button>
         </div>
         
         <div class="toolbar">
@@ -77,17 +91,19 @@
           <button class="btn btn-danger" onclick="delBatch()">批量删除</button>
         </div>
         
+        <div id="msg" class="msg"></div>
+        
         <div class="table-container">
           <table>
-            <thead><tr><th><input type="checkbox" id="selAll"></th><th>索引</th><th>订单号</th><th>商品名</th><th>数量</th><th>总价</th><th>状态</th><th>操作</th></tr></thead>
+            <thead><tr><th><input type="checkbox" id="selAll"></th><th>索引</th><th>订单号</th><th>商品名称</th><th>数量</th><th>总价</th><th>状态</th><th>操作</th></tr></thead>
             <tbody id="tbody"></tbody>
           </table>
         </div>
         
         <div class="pagination">
-          <button onclick="prev()">上一页</button>
+          <button onclick="prev()" id="prevBtn">上一页</button>
           <span class="page-info" id="pageInfo">1 / 1</span>
-          <button onclick="next()">下一页</button>
+          <button onclick="next()" id="nextBtn">下一页</button>
         </div>
       </div>
     </div>
@@ -117,16 +133,49 @@
     const API = '/springboot2z04j/orders';
     let currentId = null, page = 1, limit = 10, totalPage = 1;
 
+    // 显示消息
+    function setMsg(text, type) {
+      const el = document.getElementById('msg');
+      if (!text) { el.className = 'msg'; el.textContent = ''; return; }
+      el.textContent = text; 
+      el.className = `msg ${type} show`;
+      setTimeout(() => { el.className = 'msg'; }, 3000);
+    }
+
     async function load() {
-      const no = document.getElementById('searchOrderId').value;
+      setMsg(''); 
+      const orderId = document.getElementById('searchOrderId').value.trim();
+      const goodName = document.getElementById('searchGoodName').value.trim();
+      
+      let token;
+      try { token = localStorage.getItem('token'); } catch (e) {}
+      if (!token) {
+          setMsg('未登录或会话过期', 'error');
+          setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+          return;
+      }
+
+      // 构建查询参数：只有当输入框不为空时才拼接到 URL
+      let url = `${API}/page?page=${page}&limit=${limit}`;
+      if (orderId) url += `&orderid=${encodeURIComponent(orderId)}`;
+      if (goodName) url += `&goodname=${encodeURIComponent(goodName)}`;
+
       try {
-        const res = await fetch(`${API}/page?page=${page}&limit=${limit}&orderid=${no}`, { headers: {'Token': localStorage.getItem('token')} });
+        const res = await fetch(url, { headers: {'Token': token} });
         const json = await res.json();
+        
+        if (json.code !== 0) {
+            setMsg(json.msg || '加载失败', 'error');
+            return;
+        }
+
         const list = json.data.list || [];
         totalPage = json.data.totalPage || 1;
         document.getElementById('pageInfo').innerText = `${page} / ${totalPage}`;
+        document.getElementById('prevBtn').disabled = page <= 1;
+        document.getElementById('nextBtn').disabled = page >= totalPage;
 
-        // --- 暂无数据 ---
+        // 暂无数据判断
         if (list.length === 0) {
             document.getElementById('tbody').innerHTML = '<tr><td colspan="8" style="text-align:center;color:#999;padding:20px;">暂无数据</td></tr>';
             return;
@@ -136,11 +185,11 @@
           <tr>
             <td><input type="checkbox" name="ids" value="${row.id}"></td>
             <td>${(page - 1) * limit + index + 1}</td>
-            <td>${row.orderid}</td>
-            <td>${row.goodname}</td>
-            <td>${row.buynumber}</td>
-            <td>${row.total}</td>
-            <td>${row.status}</td>
+            <td>${row.orderid || ''}</td>
+            <td>${row.goodname || ''}</td>
+            <td>${row.buynumber || 0}</td>
+            <td>${row.total || 0}</td>
+            <td>${row.status || ''}</td>
             <td>
               <div class="action-btns">
                 <button class="btn btn-sm btn-success" onclick='detail(${JSON.stringify(row)})'>详情</button>
@@ -150,41 +199,62 @@
             </td>
           </tr>
         `).join('');
-      } catch (e) { console.error(e); }
+        
+        // 搜索成功反馈
+        if (orderId || goodName) {
+            setMsg(`查询成功，共找到 ${json.data.total || list.length} 条记录`, 'success');
+        }
+
+      } catch (e) { 
+          console.error(e);
+          setMsg('网络错误，请稍后重试', 'error'); 
+      }
     }
 
     function openModal(mode) {
       currentId = null;
       document.querySelectorAll('.modal-body input').forEach(i => { i.value = ''; i.disabled = false; });
       document.getElementById('modal').classList.add('show');
-      document.getElementById('modalTitle').innerText = mode === 'add' ? '新增订单' : '修改订单';
       document.getElementById('modalFooter').style.display = 'block';
+
+      if (mode === 'add') {
+          document.getElementById('modalTitle').innerText = '新增订单';
+      } else if (mode === 'edit') {
+          document.getElementById('modalTitle').innerText = '修改订单';
+      } else if (mode === 'view') {
+          document.getElementById('modalTitle').innerText = '订单详情';
+          document.querySelectorAll('.modal-body input').forEach(el => el.disabled = true);
+          document.getElementById('modalFooter').style.display = 'none';
+      }
     }
 
     function edit(row) {
       openModal('edit');
       currentId = row.id;
-      document.getElementById('e_no').value = row.orderid;
-      document.getElementById('e_good').value = row.goodname;
-      document.getElementById('e_num').value = row.buynumber;
-      document.getElementById('e_total').value = row.total;
-      document.getElementById('e_status').value = row.status;
+      fillForm(row);
     }
 
     function detail(row) {
       openModal('view');
-      document.getElementById('modalTitle').innerText = '订单详情';
-      document.getElementById('e_no').value = row.orderid;
-      document.getElementById('e_good').value = row.goodname;
-      document.getElementById('e_num').value = row.buynumber;
-      document.getElementById('e_total').value = row.total;
-      document.getElementById('e_status').value = row.status;
-      document.querySelectorAll('.modal-body input').forEach(el => el.disabled = true);
-      document.getElementById('modalFooter').style.display = 'none';
+      fillForm(row);
+    }
+
+    function fillForm(row) {
+      document.getElementById('e_no').value = row.orderid || '';
+      document.getElementById('e_good').value = row.goodname || '';
+      document.getElementById('e_num').value = row.buynumber || '';
+      document.getElementById('e_total').value = row.total || '';
+      document.getElementById('e_status').value = row.status || '';
     }
 
     function closeModal() { document.getElementById('modal').classList.remove('show'); }
-    function resetSearch() { document.getElementById('searchOrderId').value = ''; page = 1; load(); }
+    
+    function resetSearch() { 
+        document.getElementById('searchOrderId').value = ''; 
+        document.getElementById('searchGoodName').value = ''; 
+        page = 1; 
+        load(); 
+    }
 
     async function save() {
       const payload = {
@@ -194,25 +264,59 @@
         total: document.getElementById('e_total').value,
         status: document.getElementById('e_status').value
       };
-      if(currentId) payload.id = currentId;
-      await fetch(`${API}/${currentId ? 'update' : 'save'}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Token': localStorage.getItem('token') },
-        body: JSON.stringify(payload)
-      });
-      closeModal(); load();
+      
+      let url = `${API}/save`;
+      if(currentId) {
+          payload.id = currentId;
+          url = `${API}/update`;
+      }
+      
+      try {
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Token': localStorage.getItem('token') },
+            body: JSON.stringify(payload)
+          });
+          const d = await res.json();
+          if (d.code === 0) {
+              setMsg('保存成功', 'success');
+              closeModal(); 
+              load();
+          } else {
+              setMsg(d.msg || '保存失败', 'error');
+          }
+      } catch (e) {
+          setMsg('网络错误', 'error');
+      }
     }
 
-    async function del(id) { if(confirm('确认删除?')) { await fetch(`${API}/delete`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Token': localStorage.getItem('token') }, body: JSON.stringify([id]) }); load(); } }
+    async function del(id) { 
+        if(!confirm('确认删除?')) return;
+        try {
+            await fetch(`${API}/delete`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Token': localStorage.getItem('token') }, body: JSON.stringify([id]) });
+            setMsg('删除成功', 'success');
+            load(); 
+        } catch (e) { setMsg('网络错误', 'error'); }
+    }
+
     async function delBatch() {
       const ids = Array.from(document.querySelectorAll('input[name="ids"]:checked')).map(el => el.value);
-      if(ids.length && confirm('确认删除选中项?')) { await fetch(`${API}/delete`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Token': localStorage.getItem('token') }, body: JSON.stringify(ids) }); load(); }
+      if(ids.length === 0) { setMsg('请先选择要删除的项', 'error'); return; }
+      if(!confirm('确认删除选中项?')) return;
+      
+      try {
+          await fetch(`${API}/delete`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Token': localStorage.getItem('token') }, body: JSON.stringify(ids) });
+          setMsg('删除成功', 'success');
+          load();
+      } catch (e) { setMsg('网络错误', 'error'); }
     }
     
     function prev() { if(page > 1) { page--; load(); } }
     function next() { if(page < totalPage) { page++; load(); } }
 
     document.getElementById('selAll').onchange = function() { document.querySelectorAll('input[name="ids"]').forEach(el => el.checked = this.checked); };
+    
+    // 初始加载
     load();
   </script>
 </body>

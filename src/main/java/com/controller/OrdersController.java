@@ -42,8 +42,8 @@ import java.io.IOException;
 /**
  * 订单
  * 后端接口
- * @author 
- * @email 
+ * @author
+ * @email
  * @date 2023-04-21 15:06:09
  */
 @RestController
@@ -60,66 +60,93 @@ public class OrdersController {
     public R page(@RequestParam Map<String, Object> params, OrdersEntity orders,
                   HttpServletRequest request){
 
-        // 修改处：增加空值判断，防止 NullPointerException
-        Object role = request.getSession().getAttribute("role");
-        if(role != null && !"管理员".equals(role.toString())) {
-            Object userId = request.getSession().getAttribute("userId");
+        // 1. 权限控制：如果是普通用户，只能看自己的订单
+        // 尝试从Session获取，兼容Request Attribute（拦截器常用方式）
+        String role = (String) request.getSession().getAttribute("role");
+        if(role == null) role = (String) request.getAttribute("role"); // 尝试从request获取
+
+        if(role != null && !"管理员".equals(role)) {
+            Long userId = (Long) request.getSession().getAttribute("userId");
+            if(userId == null) userId = (Long) request.getAttribute("userId");
+
             if(userId != null){
-                orders.setUserid((Long)userId);
+                orders.setUserid(userId);
             }
         }
 
         EntityWrapper<OrdersEntity> ew = new EntityWrapper<OrdersEntity>();
 
-        // 增加：模糊查询支持 (可选，建议加上以配合前端搜索)
+        // 2. 修复搜索逻辑：手动处理模糊查询，避免空字符串导致查询为空
         String orderid = (String) params.get("orderid");
-        String goodname = (String) params.get("goodname");
-        if(StringUtils.isNotBlank(orderid)) ew.like("orderid", orderid);
-        if(StringUtils.isNotBlank(goodname)) ew.like("goodname", goodname);
+        if(StringUtils.isNotBlank(orderid)) {
+            ew.like("orderid", orderid);
+            // 关键：清空实体类中的值，防止 MPUtil 再次生成 = '' 的精确匹配条件
+            orders.setOrderid(null);
+        }
 
-        // 增加：按时间倒序
+        String goodname = (String) params.get("goodname");
+        if(StringUtils.isNotBlank(goodname)) {
+            ew.like("goodname", goodname);
+            orders.setGoodname(null);
+        }
+
+        String status = (String) params.get("status");
+        if(StringUtils.isNotBlank(status)) {
+            ew.eq("status", status);
+            orders.setStatus(null);
+        }
+
+        // 3. 排序：按ID倒序
         ew.orderBy("id", false);
 
+        // 4. 执行查询
         PageUtils page = ordersService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, orders), params), params));
 
         return R.ok().put("data", page);
     }
 
-    
+
     /**
      * 前端列表
      */
-	@IgnoreAuth
+    @IgnoreAuth
     @RequestMapping("/list")
-    public R list(@RequestParam Map<String, Object> params,OrdersEntity orders, 
-		HttpServletRequest request){
+    public R list(@RequestParam Map<String, Object> params,OrdersEntity orders,
+                  HttpServletRequest request){
         EntityWrapper<OrdersEntity> ew = new EntityWrapper<OrdersEntity>();
 
-		PageUtils page = ordersService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, orders), params), params));
+        // 前端列表也加上同样的模糊查询逻辑
+        String orderid = (String) params.get("orderid");
+        if(StringUtils.isNotBlank(orderid)) {
+            ew.like("orderid", orderid);
+            orders.setOrderid(null);
+        }
+
+        PageUtils page = ordersService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, orders), params), params));
         return R.ok().put("data", page);
     }
 
-	/**
+    /**
      * 列表
      */
     @RequestMapping("/lists")
     public R list( OrdersEntity orders){
-       	EntityWrapper<OrdersEntity> ew = new EntityWrapper<OrdersEntity>();
-      	ew.allEq(MPUtil.allEQMapPre( orders, "orders")); 
+        EntityWrapper<OrdersEntity> ew = new EntityWrapper<OrdersEntity>();
+        ew.allEq(MPUtil.allEQMapPre( orders, "orders"));
         return R.ok().put("data", ordersService.selectListView(ew));
     }
 
-	 /**
+    /**
      * 查询
      */
     @RequestMapping("/query")
     public R query(OrdersEntity orders){
         EntityWrapper< OrdersEntity> ew = new EntityWrapper< OrdersEntity>();
- 		ew.allEq(MPUtil.allEQMapPre( orders, "orders")); 
-		OrdersView ordersView =  ordersService.selectView(ew);
-		return R.ok("查询订单成功").put("data", ordersView);
+        ew.allEq(MPUtil.allEQMapPre( orders, "orders"));
+        OrdersView ordersView =  ordersService.selectView(ew);
+        return R.ok("查询订单成功").put("data", ordersView);
     }
-	
+
     /**
      * 后端详情
      */
@@ -132,13 +159,13 @@ public class OrdersController {
     /**
      * 前端详情
      */
-	@IgnoreAuth
+    @IgnoreAuth
     @RequestMapping("/detail/{id}")
     public R detail(@PathVariable("id") Long id){
         OrdersEntity orders = ordersService.selectById(id);
         return R.ok().put("data", orders);
     }
-    
+
 
 
 
@@ -147,31 +174,32 @@ public class OrdersController {
      */
     @RequestMapping("/save")
     public R save(@RequestBody OrdersEntity orders, HttpServletRequest request){
-    	orders.setId(new Date().getTime()+new Double(Math.floor(Math.random()*1000)).longValue());
-    	//ValidatorUtils.validateEntity(orders);
-        javax.servlet.http.HttpSession session = null;
-        try { session = request.getSession(false); } catch (Exception ignore) {}
-        Object userIdObj = session != null ? session.getAttribute("userId") : null;
-        if (userIdObj instanceof Long) {
-            orders.setUserid((Long) userIdObj);
+        orders.setId(new Date().getTime()+new Double(Math.floor(Math.random()*1000)).longValue());
+        //ValidatorUtils.validateEntity(orders);
+
+        // 获取当前用户ID并设置
+        Long userId = (Long) request.getSession().getAttribute("userId");
+        if(userId == null) userId = (Long) request.getAttribute("userId");
+
+        if (userId != null) {
+            orders.setUserid(userId);
         }
+
         ordersService.insert(orders);
         return R.ok();
     }
-    
+
     /**
      * 前端保存
      */
     @RequestMapping("/add")
     public R add(@RequestBody OrdersEntity orders, HttpServletRequest request){
-    	orders.setId(new Date().getTime()+new Double(Math.floor(Math.random()*1000)).longValue());
-    	//ValidatorUtils.validateEntity(orders);
+        orders.setId(new Date().getTime()+new Double(Math.floor(Math.random()*1000)).longValue());
+        //ValidatorUtils.validateEntity(orders);
         ordersService.insert(orders);
         return R.ok();
     }
-
-
-
+    
     /**
      * 修改
      */
@@ -184,8 +212,6 @@ public class OrdersController {
     }
 
 
-    
-
     /**
      * 删除
      */
@@ -194,10 +220,6 @@ public class OrdersController {
         ordersService.deleteBatchIds(Arrays.asList(ids));
         return R.ok();
     }
-    
-	
-
-
 
 
 
@@ -211,7 +233,7 @@ public class OrdersController {
         params.put("xColumn", xColumnName);
         params.put("yColumn", yColumnName);
         EntityWrapper<OrdersEntity> ew = new EntityWrapper<OrdersEntity>();
-            ew.in("status", new String[]{"已支付","已发货","已完成"}).ne("type",2);
+        ew.in("status", new String[]{"已支付","已发货","已完成"}).ne("type",2);
         List<Map<String, Object>> result = ordersService.selectValue(params, ew);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         for(Map<String, Object> m : result) {
@@ -260,7 +282,7 @@ public class OrdersController {
         params.put("yColumn", yColumnName);
         params.put("timeStatType", timeStatType);
         EntityWrapper<OrdersEntity> ew = new EntityWrapper<OrdersEntity>();
-            ew.in("status", new String[]{"已支付","已发货","已完成"}).ne("type",2);
+        ew.in("status", new String[]{"已支付","已发货","已完成"}).ne("type",2);
         List<Map<String, Object>> result = ordersService.selectTimeStatValue(params, ew);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         for(Map<String, Object> m : result) {
@@ -308,7 +330,7 @@ public class OrdersController {
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("column", columnName);
         EntityWrapper<OrdersEntity> ew = new EntityWrapper<OrdersEntity>();
-            ew.in("status", new String[]{"已支付","已发货","已完成"}).ne("type",2);
+        ew.in("status", new String[]{"已支付","已发货","已完成"}).ne("type",2);
         List<Map<String, Object>> result = ordersService.selectGroup(params, ew);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         for(Map<String, Object> m : result) {
@@ -320,10 +342,4 @@ public class OrdersController {
         }
         return R.ok().put("data", result);
     }
-
-
-
-
-
-
 }
