@@ -45,7 +45,7 @@ http://localhost:8080/springboot2z04j/front/dist/index.html#
 http://localhost:8080/springboot2z04j/admin/dist/index.html#
 
 账号 admin
-密码 admin
+密码 123456
 ```
 
 
