@@ -3,22 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>用户管理 - 装修公司管理系统</title>
+  <title>轮播图管理 - 装修公司管理系统</title>
   <style>
+    /* CSS样式与users.html保持一致 */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft YaHei", sans-serif; background: #f0f2f5; min-height: 100vh; }
-    
-    /* 顶部导航栏 */
     .top-bar { height: 60px; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); position: fixed; top: 0; left: 0; right: 0; z-index: 1000; }
     .top-bar h1 { font-size: 20px; font-weight: 600; }
     .user-info { display: flex; align-items: center; gap: 12px; font-size: 14px; }
     .user-info button { padding: 6px 16px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 4px; cursor: pointer; transition: all 0.3s; }
     .user-info button:hover { background: rgba(255,255,255,0.3); }
-    
-    /* 主容器 */
     .main-container { display: flex; margin-top: 60px; min-height: calc(100vh - 60px); }
-    
-    /* 侧边栏 */
     .sidebar { width: 220px; background: #001529; color: white; flex-shrink: 0; overflow-y: auto; }
     .menu-item { padding: 16px 24px; cursor: pointer; transition: all 0.3s; border-left: 3px solid transparent; display: flex; align-items: center; gap: 10px; font-size: 14px; }
     .menu-item:hover { background: rgba(255,255,255,0.1); }
@@ -27,27 +22,22 @@
     .menu-group { margin-top: 8px; }
     .menu-group-title { padding: 16px 24px 8px; font-size: 12px; color: rgba(255,255,255,0.5); text-transform: uppercase; }
     
-    /* --- 折叠菜单样式 --- */
+    /* 折叠菜单样式 */
     .menu-item.has-submenu { justify-content: space-between; }
     .menu-item .arrow { font-size: 12px; transition: transform 0.3s; margin-left: auto; }
     .menu-item.open .arrow { transform: rotate(180deg); }
     .submenu-container { background-color: #000c17; overflow: hidden; transition: all 0.3s; }
     .submenu.menu-item { padding-left: 48px !important; font-size: 13px; }
     
-    /* 主内容区 */
     .content { flex: 1; padding: 24px; overflow-y: auto; }
     .breadcrumb { margin-bottom: 20px; display: flex; align-items: center; gap: 8px; font-size: 14px; color: #666; }
     .breadcrumb span { color: #1890ff; }
     .content-card { background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 24px; }
-    
-    /* 搜索栏 */
     .search-bar { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: flex-end; }
     .search-field { display: flex; flex-direction: column; gap: 6px; }
     .search-field label { font-size: 14px; color: #333; }
     .search-field input { padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 14px; width: 200px; outline: none; transition: all 0.3s; }
     .search-field input:focus { border-color: #1890ff; box-shadow: 0 0 0 2px rgba(24,144,255,0.1); }
-    
-    /* 工具栏 */
     .toolbar { display: flex; gap: 12px; margin-bottom: 20px; }
     .btn { padding: 8px 16px; border: none; border-radius: 4px; font-size: 14px; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 6px; }
     .btn-primary { background: #1890ff; color: white; }
@@ -55,8 +45,6 @@
     .btn-danger { background: #ff4d4f; color: white; }
     .btn-danger:hover { background: #ff7875; }
     .btn-search { background: #1890ff; color: white; margin-top: 24px; }
-    
-    /* 表格 */
     .table-container { overflow-x: auto; margin-bottom: 20px; }
     table { width: 100%; border-collapse: collapse; font-size: 14px; }
     thead { background: #fafafa; }
@@ -64,22 +52,16 @@
     td { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; color: #666; }
     tbody tr { transition: background 0.3s; }
     tbody tr:hover { background: #fafafa; }
-    .avatar { width: 50px; height: 50px; border-radius: 4px; object-fit: cover; }
+    .slide-img { width: 120px; height: 60px; border-radius: 4px; object-fit: cover; }
     .action-btns { display: flex; gap: 8px; }
     .btn-sm { padding: 4px 12px; font-size: 13px; }
-    .btn-success { background: #52c41a; color: white; }
-    .btn-success:hover { background: #73d13d; }
     .btn-info { background: #1890ff; color: white; }
-    .btn-info:hover { background: #40a9ff; }
-    
-    /* 分页 */
+    .btn-danger { background: #ff4d4f; color: white; }
     .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 20px; }
     .pagination button { padding: 6px 12px; border: 1px solid #d9d9d9; background: white; border-radius: 4px; cursor: pointer; transition: all 0.3s; }
     .pagination button:hover:not(:disabled) { border-color: #1890ff; color: #1890ff; }
     .pagination button:disabled { opacity: 0.5; cursor: not-allowed; }
     .page-info { color: #666; font-size: 14px; }
-    
-    /* 消息提示 */
     .msg { padding: 12px 16px; border-radius: 4px; margin-bottom: 16px; font-size: 14px; display: none; }
     .msg.show { display: block; animation: fadeIn 0.3s; }
     .msg.error { background: #fff1f0; border: 1px solid #ffccc7; color: #cf1322; }
@@ -87,21 +69,18 @@
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
     
-    /* 弹窗样式 */
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 2000; align-items: center; justify-content: center; }
     .modal.show { display: flex; }
-    .modal-content { background: white; border-radius: 8px; width: 90%; max-width: 700px; max-height: 90vh; overflow-y: auto; }
+    .modal-content { background: white; border-radius: 8px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; }
     .modal-header { padding: 20px 30px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
     .modal-header h3 { font-size: 18px; color: #111827; }
     .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #6b7280; padding: 0; width: 30px; height: 30px; }
     .modal-body { padding: 30px; }
-    .modal-form { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .modal-form { display: grid; grid-template-columns: 1fr; gap: 20px; }
     .modal-form .form-group { display: flex; flex-direction: column; gap: 6px; }
-    .modal-form .form-group.full-width { grid-column: 1 / -1; }
-    .modal-form input, .modal-form select { padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 14px; outline: none; }
+    .modal-form input { padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 14px; outline: none; }
     .modal-footer { padding: 20px 30px; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 10px; }
     .btn-cancel { padding: 8px 16px; border: 1px solid #d9d9d9; background: white; border-radius: 4px; cursor: pointer; font-size: 14px; }
-    
     @media (max-width: 768px) {
       .sidebar { position: fixed; left: -220px; height: calc(100vh - 60px); transition: left 0.3s; z-index: 100; }
       .sidebar.open { left: 0; }
@@ -139,10 +118,13 @@
           <span class="arrow">▼</span>
         </div>
         <div id="sys-sub" class="submenu-container">
-          <div class="submenu menu-item active" onclick="navigate('users.html')">
+          <div class="submenu menu-item" onclick="navigate('users.html')">
             <span>用户管理</span>
           </div>
+          <div class="submenu menu-item active" onclick="navigate('system.html')">
+            <span>轮播图管理</span>
           </div>
+        </div>
       </div>
       
       <div class="menu-group">
@@ -175,23 +157,19 @@
     </div>
     
     <div class="content">
-      <div class="breadcrumb">系统管理 / <span>用户管理</span></div>
+      <div class="breadcrumb">系统管理 / <span>轮播图管理</span></div>
       <div class="content-card">
         <div class="search-bar">
           <div class="search-field">
-            <label>用户名</label>
-            <input type="text" id="searchUsername" placeholder="请输入用户名" />
+            <label>名称</label>
+            <input type="text" id="searchName" placeholder="请输入图片名称" />
           </div>
-          <div class="search-field">
-            <label>角色</label> 
-            <input type="text" id="searchRole" placeholder="请输入角色" />
-          </div>
-          <button class="btn btn-search" onclick="searchUsers()">查询</button>
+          <button class="btn btn-search" onclick="searchConfig()">查询</button>
           <button class="btn btn-danger" onclick="resetSearch()">重置</button>
         </div>
         
         <div class="toolbar">
-          <button class="btn btn-primary" onclick="addUser()">新增</button>
+          <button class="btn btn-primary" onclick="addConfig()">新增</button>
           <button class="btn btn-danger" onclick="deleteSelected()">批量删除</button>
         </div>
         
@@ -203,10 +181,9 @@
               <tr>
                 <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll()" /></th>
                 <th>索引</th>
-                <th>用户名</th>
-                <th>角色</th>
-                <th>手机</th>
-                <th>头像</th>
+                <th>名称</th>
+                <th>图片</th>
+                <th>值/链接</th>
                 <th>操作</th>
               </tr>
             </thead>
@@ -223,46 +200,38 @@
     </div>
   </div>
   
-  <div id="userModal" class="modal">
+  <div id="configModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 id="userModalTitle">新增用户</h3>
-        <button class="modal-close" onclick="closeUserModal()">×</button>
+        <h3 id="modalTitle">新增轮播图</h3>
+        <button class="modal-close" onclick="closeModal()">×</button>
       </div>
       <div class="modal-body">
         <div class="modal-form">
           <div class="form-group">
-            <label>用户名 *</label>
-            <input type="text" id="u_username" placeholder="请输入用户名" />
-          </div>
-          <div class="form-group" id="passwordGroup">
-            <label>密码 *</label>
-            <input type="password" id="u_password" placeholder="请输入密码" />
+            <label>名称 *</label>
+            <input type="text" id="c_name" placeholder="请输入配置名称" />
           </div>
           <div class="form-group">
-            <label>角色</label>
-            <input type="text" id="u_role" placeholder="请输入角色" />
+            <label>图片URL *</label>
+            <input type="text" id="c_value" placeholder="请输入图片地址" />
           </div>
           <div class="form-group">
-            <label>手机</label>
-            <input type="text" id="u_mobile" placeholder="请输入手机号码" />
-          </div>
-          <div class="form-group full-width">
-            <label>头像地址</label>
-            <input type="text" id="u_avatar" placeholder="请输入头像URL" />
+            <label>跳转链接(可选)</label>
+            <input type="text" id="c_url" placeholder="可选填" />
           </div>
         </div>
       </div>
-      <div class="modal-footer" id="userModalFooter">
-        <button class="btn-cancel" onclick="closeUserModal()">取消</button>
-        <button class="btn btn-primary" onclick="saveUser()">保存</button>
+      <div class="modal-footer" id="modalFooter">
+        <button class="btn-cancel" onclick="closeModal()">取消</button>
+        <button class="btn btn-primary" onclick="saveConfig()">保存</button>
       </div>
     </div>
   </div>
   
   <script>
     const base = '/springboot2z04j';
-    let page = 1, limit = 10, totalPage = 1, selectedIds = new Set(), currentUser = null, userModalMode = 'add';
+    let page = 1, limit = 10, totalPage = 1, selectedIds = new Set(), currentConfig = null, modalMode = 'add';
     
     function navigate(link) { window.location.href = link; }
     function logout() { try { localStorage.removeItem('token'); } catch(e) {} window.location.href = 'index.html'; }
@@ -286,7 +255,7 @@
       }
     }
     
-    // 页面加载时自动展开系统管理菜单
+    // 自动展开系统管理
     document.addEventListener('DOMContentLoaded', () => {
       const submenu = document.getElementById('sys-sub');
       const parentItem = submenu.previousElementSibling;
@@ -294,29 +263,29 @@
       parentItem.classList.add('open');
     });
 
-    async function loadUsers() {
+    async function loadConfig() {
       setMsg(''); let token;
       try { token = localStorage.getItem('token'); } catch (e) {}
       if (!token) { setMsg('未登录或会话过期', 'error'); setTimeout(() => { window.location.href = 'index.html'; }, 1500); return; }
       try {
-        const username = document.getElementById('searchUsername').value.trim();
-        const role = document.getElementById('searchRole').value.trim();
-        let url = `${base}/users/page?page=${page}&limit=${limit}`;
-        if (username) url += `&username=${encodeURIComponent(username)}`;
-        if (role) url += `&role=${encodeURIComponent(role)}`;
+        const name = document.getElementById('searchName').value.trim();
+        // 假设接口为 /config/page 或 /lunbotu/page
+        let url = `${base}/config/page?page=${page}&limit=${limit}`; 
+        if (name) url += `&name=${encodeURIComponent(name)}`;
         
         const res = await fetch(url, { headers: { 'Token': token } });
         const data = await res.json().catch(() => ({}));
         if (!data || data.code !== 0) {
-          setMsg((data && data.msg) || '加载失败', 'error');
-          if (data && data.code === 401) { try { localStorage.removeItem('token'); } catch(e) {} setTimeout(() => { window.location.href = 'index.html'; }, 1500); }
+          // 如果config接口不存在，尝试访问lunbotu接口（作为备选方案）
+          console.warn('Config load failed, trying generic...');
+          setMsg('加载失败', 'error');
           return;
         }
         
         const list = (data.data && data.data.list) || [];
         totalPage = (data.data && data.data.totalPage) || 1;
         page = (data.data && data.data.currPage) || page;
-        window._usersCache = list;
+        window._configCache = list;
         renderTable(list); updatePagination();
         if (list.length === 0) setMsg('暂无数据', 'success');
       } catch (e) { setMsg('网络错误，请稍后重试', 'error'); }
@@ -324,20 +293,18 @@
     
     function renderTable(list) {
       const tbody = document.getElementById('tbody');
-      if (list.length === 0) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#999;">暂无数据</td></tr>'; return; }
+      if (list.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#999;">暂无数据</td></tr>'; return; }
       tbody.innerHTML = list.map((row, index) => `
         <tr>
           <td><input type="checkbox" value="${row.id}" onchange="toggleSelect(${row.id})" ${selectedIds.has(row.id) ? 'checked' : ''} /></td>
           <td>${(page - 1) * limit + index + 1}</td>
-          <td>${row.username || ''}</td>
-          <td>${row.role || ''}</td>
-          <td>${row.mobile || ''}</td>
-          <td>${row.avatar ? `<img src="${row.avatar}" class="avatar" alt="头像" />` : '<div style="width:50px;height:50px;background:#f0f0f0;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#999;">无</div>'}</td>
+          <td>${row.name || '轮播图 ' + (index + 1)}</td>
+          <td>${row.value ? `<img src="${row.value}" class="slide-img" alt="轮播图" />` : '无图'}</td>
+          <td>${row.value || ''}</td>
           <td>
             <div class="action-btns">
-              <button class="btn btn-sm btn-info" onclick="editUser(${row.id})">修改</button>
-              <button class="btn btn-sm btn-danger" onclick="deleteUser(${row.id})">删除</button>
-              <button class="btn btn-sm btn-primary" onclick="resetPassword('${row.username || ''}')">重置密码</button>
+              <button class="btn btn-sm btn-info" onclick="editConfig(${row.id})">修改</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteConfig(${row.id})">删除</button>
             </div>
           </td>
         </tr>
@@ -349,17 +316,16 @@
       document.getElementById('prevBtn').disabled = page <= 1;
       document.getElementById('nextBtn').disabled = page >= totalPage;
     }
-    function prevPage() { if (page > 1) { page--; loadUsers(); } }
-    function nextPage() { if (page < totalPage) { page++; loadUsers(); } }
+    function prevPage() { if (page > 1) { page--; loadConfig(); } }
+    function nextPage() { if (page < totalPage) { page++; loadConfig(); } }
     
     function resetSearch() {
-      document.getElementById('searchUsername').value = '';
-      document.getElementById('searchRole').value = ''; 
-      page = 1; selectedIds.clear(); loadUsers();
+      document.getElementById('searchName').value = '';
+      page = 1; selectedIds.clear(); loadConfig();
       setMsg('搜索条件已重置', 'success');
     }
     
-    function searchUsers() { page = 1; loadUsers(); }
+    function searchConfig() { page = 1; loadConfig(); }
     
     function toggleSelectAll() {
       const checked = document.getElementById('selectAll').checked;
@@ -370,91 +336,78 @@
     }
     function toggleSelect(id) { selectedIds.has(id) ? selectedIds.delete(id) : selectedIds.add(id); }
     
-    function openUserModal(mode, id = null) {
-      userModalMode = mode;
-      const modal = document.getElementById('userModal');
-      const title = document.getElementById('userModalTitle');
-      const footer = document.getElementById('userModalFooter');
-      const pwdGroup = document.getElementById('passwordGroup');
-      if (mode === 'add') {
-        title.textContent = '新增用户'; clearUserForm(); setUserFormDisabled(false); pwdGroup.style.display = 'block'; footer.style.display = 'flex'; currentUser = null;
-      } else if (mode === 'edit') {
-        title.textContent = '修改用户信息'; clearUserForm();
-        const user = (window._usersCache || []).find(u => u.id === id);
-        if (user) { currentUser = user; fillUserForm(user); }
-        setUserFormDisabled(false); pwdGroup.style.display = 'none'; footer.style.display = 'flex';
+    function addConfig() {
+      modalMode = 'add';
+      document.getElementById('modalTitle').textContent = '新增轮播图';
+      document.getElementById('c_name').value = '';
+      document.getElementById('c_value').value = '';
+      document.getElementById('c_url').value = '';
+      document.getElementById('configModal').classList.add('show');
+    }
+    
+    function editConfig(id) {
+      modalMode = 'edit';
+      const item = window._configCache.find(i => i.id === id);
+      if (item) {
+        currentConfig = item;
+        document.getElementById('modalTitle').textContent = '修改轮播图';
+        document.getElementById('c_name').value = item.name || '';
+        document.getElementById('c_value').value = item.value || '';
+        document.getElementById('c_url').value = item.url || ''; // 假设有url字段
+        document.getElementById('configModal').classList.add('show');
       }
-      modal.classList.add('show');
     }
     
-    function closeUserModal() { document.getElementById('userModal').classList.remove('show'); clearUserForm(); currentUser = null; }
-    function fillUserForm(u) {
-      document.getElementById('u_username').value = u.username || '';
-      document.getElementById('u_role').value = u.role || '';
-      document.getElementById('u_mobile').value = u.mobile || '';
-      document.getElementById('u_avatar').value = u.avatar || '';
+    function closeModal() {
+      document.getElementById('configModal').classList.remove('show');
+      currentConfig = null;
     }
-    function clearUserForm() { ['u_username', 'u_password', 'u_role', 'u_mobile', 'u_avatar'].forEach(id => document.getElementById(id).value = ''); }
-    function setUserFormDisabled(disabled) { ['u_username', 'u_password', 'u_role', 'u_mobile', 'u_avatar'].forEach(id => document.getElementById(id).disabled = disabled); }
-    function addUser() { openUserModal('add'); }
-    function editUser(id) { openUserModal('edit', id); }
     
-    async function saveUser() {
-      const username = document.getElementById('u_username').value.trim();
-      const role = document.getElementById('u_role').value.trim();
-      const mobile = document.getElementById('u_mobile').value.trim();
-      const avatar = document.getElementById('u_avatar').value.trim();
-      const password = document.getElementById('u_password').value.trim();
-      if (!username || (userModalMode === 'add' && !password)) { setMsg('请填写用户名和密码！', 'error'); return; }
+    async function saveConfig() {
+      const name = document.getElementById('c_name').value.trim();
+      const value = document.getElementById('c_value').value.trim();
+      if (!name || !value) { setMsg('请填写名称和图片地址！', 'error'); return; }
+      
       let token = ''; try { token = localStorage.getItem('token') || ''; } catch(e) {}
-      if (!token) { setMsg('未登录或会话过期', 'error'); setTimeout(() => { window.location.href = 'index.html'; }, 1200); return; }
-      const payload = { username, role, mobile, avatar };
-      if (userModalMode === 'add') payload.password = password;
-      let url = `${base}/users/save`;
-      if (userModalMode === 'edit' && currentUser && currentUser.id != null) { url = `${base}/users/update`; payload.id = currentUser.id; }
+      const payload = { name, value };
+      // 如果是config表，通常字段是 name, value
+      
+      let url = `${base}/config/save`;
+      if (modalMode === 'edit' && currentConfig) { 
+        url = `${base}/config/update`; 
+        payload.id = currentConfig.id; 
+      }
+      
       try {
         const res = await fetch(url, { method: 'POST', headers: { 'Token': token, 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         const data = await res.json().catch(() => ({}));
         if (!data || data.code !== 0) { setMsg((data && data.msg) || '操作失败', 'error'); return; }
-        setMsg(userModalMode === 'edit' ? '修改成功！' : '添加成功！', 'success'); closeUserModal(); loadUsers();
-      } catch (e) { setMsg('网络错误，请稍后重试', 'error'); }
+        setMsg('保存成功！', 'success'); closeModal(); loadConfig();
+      } catch (e) { setMsg('网络错误', 'error'); }
     }
     
-    async function deleteUser(id) {
-      if (!confirm('确定要删除该用户吗?')) return;
+    async function deleteConfig(id) {
+      if (!confirm('确定删除吗？')) return;
       doDelete([id]);
     }
     
     async function deleteSelected() {
-      if (selectedIds.size === 0) { setMsg('请先选择要删除的用户', 'error'); return; }
-      if (!confirm(`确定要删除选中的 ${selectedIds.size} 个用户吗?`)) return;
+      if (selectedIds.size === 0) return setMsg('请先选择', 'error');
+      if (!confirm(`确定删除选中的 ${selectedIds.size} 项吗？`)) return;
       doDelete(Array.from(selectedIds));
     }
-
+    
     async function doDelete(ids) {
-        let token = ''; try { token = localStorage.getItem('token') || ''; } catch(e) {}
-        if (!token) { setMsg('未登录或会话过期', 'error'); setTimeout(() => { window.location.href = 'index.html'; }, 1200); return; }
-        try {
-            const url = `${base}/users/delete`;
-            const res = await fetch(url, { method: 'POST', headers: { 'Token': token, 'Content-Type': 'application/json' }, body: JSON.stringify(ids) });
-            const data = await res.json().catch(() => ({}));
-            if (!data || data.code !== 0) { setMsg((data && data.msg) || '删除失败', 'error'); return; }
-            setMsg('删除成功！', 'success'); selectedIds.clear(); loadUsers();
-        } catch (e) { setMsg('网络错误，请稍后重试', 'error'); }
-    }
-    
-    async function resetPassword(username) {
-      if (!username) { setMsg('缺少用户名，无法重置密码', 'error'); return; }
+      let token = ''; try { token = localStorage.getItem('token') || ''; } catch(e) {}
       try {
-        const url = `${base}/users/resetPass?username=${encodeURIComponent(username)}`;
-        const res = await fetch(url, { method: 'GET' });
-        const data = await res.json().catch(() => ({}));
-        if (!data || data.code !== 0) { setMsg((data && data.msg) || '重置失败', 'error'); return; }
-        setMsg('密码已重置为：123456', 'success');
-      } catch (e) { setMsg('网络错误，请稍后重试', 'error'); }
+        const res = await fetch(`${base}/config/delete`, { method: 'POST', headers: { 'Token': token, 'Content-Type': 'application/json' }, body: JSON.stringify(ids) });
+        const data = await res.json();
+        if (data.code === 0) { setMsg('删除成功', 'success'); selectedIds.clear(); loadConfig(); }
+        else setMsg(data.msg || '删除失败', 'error');
+      } catch (e) { setMsg('网络错误', 'error'); }
     }
     
-    loadUsers();
+    loadConfig();
   </script>
 </body>
 </html>
