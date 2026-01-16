@@ -62,13 +62,130 @@
     .modal-header h3 { font-size: 16px; margin: 0; color: #333; }
     .modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: #999; }
     .modal-body { padding: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; position: relative; } /* 添加 relative 定位 */
     .full-width { grid-column: 1 / -1; }
     .form-group label { font-size: 14px; color: #333; }
-    .form-group input, .form-group select { padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; outline: none; width: 100%; }
+    .form-group input, .form-group select { padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; outline: none; width: 100%; transition: border-color 0.3s; }
     .modal-footer { padding: 20px; border-top: 1px solid #f0f0f0; text-align: right; }
     .btn-cancel { background: white; border: 1px solid #d9d9d9; color: #666; margin-right: 8px; } .btn-cancel:hover { color: #333; border-color: #999; }
     
+    /* --- 新增：表单错误提示样式 --- */
+    .error-tip {
+        color: #ff4d4f;
+        font-size: 12px;
+        margin-top: -2px;
+        min-height: 18px; /* 预留高度防止抖动，或者设为 display:none 动态显示 */
+        display: none;
+    }
+    
+    /* 当父级 form-group 有 has-error 类时 */
+    .form-group.has-error input {
+        border-color: #ff4d4f;
+    }
+    .form-group.has-error .error-tip {
+        display: block;
+    }
+
+    /* --- 上传组件样式 --- */
+    .avatar-upload-container {
+        display: flex;
+        justify-content: flex-start;
+        margin-top: 5px;
+    }
+    
+    .avatar-uploader-trigger {
+        width: 120px;
+        height: 120px;
+        border: 1px dashed #d9d9d9;
+        border-radius: 6px;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        transition: border-color 0.3s;
+        background: #fafafa;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .avatar-uploader-trigger:hover {
+        border-color: #1890ff;
+    }
+    
+    .avatar-placeholder {
+        text-align: center;
+        color: #8c939d;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .avatar-placeholder-icon { font-size: 28px; font-weight: 100; margin-bottom: 8px; color: #8c939d; }
+    .avatar-placeholder-text { font-size: 12px; color: #8c939d; }
+
+    .avatar-preview-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: none;
+        position: absolute;
+        top: 0; left: 0;
+    }
+    
+    .avatar-uploader-mask {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        gap: 16px;
+        opacity: 0;
+        transition: opacity 0.3s;
+        z-index: 10;
+        cursor: default;
+    }
+    
+    .avatar-uploader-trigger.has-image .avatar-uploader-mask {
+        display: flex;
+    }
+
+    .action-icon {
+        color: white;
+        font-size: 20px;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    .action-icon:hover { transform: scale(1.1); }
+
+    .avatar-uploader-trigger.has-image { border-style: solid; }
+    .avatar-uploader-trigger.has-image .avatar-placeholder { display: none; }
+    .avatar-uploader-trigger.has-image .avatar-preview-img { display: block; }
+    .avatar-uploader-trigger.has-image:hover .avatar-uploader-mask { opacity: 1; }
+    
+    /* 隐藏删除图标（详情模式） */
+    .modal.view-mode .delete-icon {
+        display: none !important;
+    }
+
+    .image-modal {
+        display: none;
+        position: fixed;
+        z-index: 3000;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background-color: rgba(0,0,0,0.8);
+        align-items: center;
+        justify-content: center;
+        cursor: zoom-out;
+    }
+    .image-modal img {
+        max-width: 90%;
+        max-height: 90%;
+        object-fit: contain;
+        box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+
     @media (max-width: 768px) {
       .search-field input { width: 100%; }
       .modal-content { width: 90%; }
@@ -114,12 +231,55 @@
         <button class="modal-close" onclick="closeModal()">×</button>
       </div>
       <div class="modal-body">
-        <div class="form-group"><label>工号</label><input type="text" id="f_code"></div>
-        <div class="form-group"><label>姓名</label><input type="text" id="f_name"></div>
+        <div class="form-group">
+            <label>工号 <span style="color:red">*</span></label>
+            <input type="text" id="f_code" oninput="clearError(this)">
+            <div class="error-tip"></div>
+        </div>
+        
+        <div class="form-group">
+            <label>姓名 <span style="color:red">*</span></label>
+            <input type="text" id="f_name" oninput="clearError(this)">
+            <div class="error-tip"></div>
+        </div>
+        
         <div class="form-group"><label>性别</label><select id="f_sex"><option>男</option><option>女</option></select></div>
         <div class="form-group"><label>职位</label><input type="text" id="f_job"></div>
         <div class="form-group"><label>电话</label><input type="text" id="f_tel"></div>
-        <div class="form-group full-width"><label>头像URL</label><input type="text" id="f_img"></div>
+        
+        <div class="form-group full-width">
+            <label style="display: block; text-align: left; margin-bottom: 8px;">头像</label>
+            <div class="avatar-upload-container">
+                <input type="file" id="file_input" accept="image/*" onchange="uploadImg()" style="display: none;">
+                
+                <div class="avatar-uploader-trigger" id="avatar_trigger" onclick="triggerFileClick(event)">
+                    <div class="avatar-placeholder">
+                        <span class="avatar-placeholder-icon">+</span>
+                        <span class="avatar-placeholder-text">点击上传头像</span>
+                    </div>
+
+                    <img id="img_preview" class="avatar-preview-img" src="">
+                    
+                    <div class="avatar-uploader-mask" onclick="event.stopPropagation()">
+                        <div class="action-icon" title="查看大图" onclick="previewImage()">
+                            <svg viewBox="0 0 1024 1024" width="20" height="20" fill="currentColor">
+                                <path d="M854.6 288.7c6.2 0 11.2 5 11.2 11.2v468.6c0 6.2-5 11.2-11.2 11.2H169.4c-6.2 0-11.2-5-11.2-11.2V299.9c0-6.2 5-11.2 11.2-11.2h685.2m0-65H169.4C127.2 223.7 93 257.9 93 300.1v468.4c0 42.2 34.2 76.4 76.4 76.4h685.2c42.2 0 76.4-34.2 76.4-76.4V299.9c0-42.2-34.2-76.2-76.4-76.2z"/>
+                                <path d="M492 346c-99.2 0-180 80.8-180 180s80.8 180 180 180 180-80.8 180-180-80.8-180-180-180zm0 318c-76.1 0-138-61.9-138-138s61.9-138 138-138 138 61.9 138 138-61.9 138-138 138z"/>
+                                <path d="M621.5 593l-64-64 29.7-29.7 64 64z"/>
+                            </svg>
+                        </div>
+                        <div class="action-icon delete-icon" title="删除图片" onclick="removeAvatar()">
+                            <svg viewBox="0 0 1024 1024" width="20" height="20" fill="currentColor">
+                                <path d="M784 256h-168v-48c0-26.5-21.5-48-48-48H456c-26.5 0-48 21.5-48 48v48H240c-17.7 0-32 14.3-32 32s14.3 32 32 32h32v488c0 44.2 35.8 80 80 80h320c44.2 0 80-35.8 80-80V320h32c17.7 0 32-14.3 32-32s-14.3-32-32-32zM472 208h80v48h-80v-48zm264 600H288V320h448v488zM424 400c0-17.7 14.3-32 32-32s32 14.3 32 32v280c0 17.7-14.3 32-32 32s-32-14.3-32-32V400zm144 0c0-17.7 14.3-32 32-32s32 14.3 32 32v280c0 17.7-14.3 32-32 32s-32-14.3-32-32V400z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <input type="hidden" id="f_img">
+            </div>
+        </div>
+        
       </div>
       <div class="modal-footer" id="modalFooter">
         <button class="btn btn-cancel" onclick="closeModal()">取消</button>
@@ -128,14 +288,94 @@
     </div>
   </div>
 
+  <div id="imageModal" class="image-modal" onclick="closeImageModal()">
+      <img id="imageModalSrc" src="" onclick="event.stopPropagation()">
+  </div>
+
   <script>
     const API_BASE = '/springboot2z04j/yuangongxinxi';
+    const UPLOAD_URL = '/springboot2z04j/file/upload'; 
+    const FILE_BASE_URL = '/springboot2z04j/upload/';   
+    
     let page = 1, limit = 10, totalPage = 1, currItem = null, mode = 'add';
     
     function showMsg(txt, type) {
       const m = document.getElementById('msg');
       m.className = `msg ${type} show`; m.textContent = txt;
       setTimeout(() => m.className = 'msg', 3000);
+    }
+
+    // 清除错误状态
+    function clearError(input) {
+        const group = input.parentNode;
+        group.classList.remove('has-error');
+        const tip = group.querySelector('.error-tip');
+        if (tip) tip.textContent = '';
+    }
+
+    function triggerFileClick(e) {
+        const trigger = document.getElementById('avatar_trigger');
+        if (!trigger.classList.contains('has-image')) {
+            document.getElementById('file_input').click();
+        }
+    }
+
+    async function uploadImg() {
+        const fileInput = document.getElementById('file_input');
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const res = await fetch(UPLOAD_URL, {
+                method: 'POST',
+                headers: { 'Token': localStorage.getItem('token') },
+                body: formData
+            });
+            const data = await res.json();
+            
+            if (data.code === 0) {
+                const fileName = data.file;
+                document.getElementById('f_img').value = fileName;
+                
+                const preview = document.getElementById('img_preview');
+                preview.src = FILE_BASE_URL + fileName;
+                document.getElementById('avatar_trigger').classList.add('has-image');
+                
+                // --- 修改：删除了 showMsg 调用 ---
+            } else {
+                showMsg(data.msg || '上传失败', 'error');
+                removeAvatar();
+            }
+        } catch (e) {
+            console.error(e);
+            showMsg('上传出错', 'error');
+            removeAvatar();
+        }
+        fileInput.value = '';
+    }
+
+    function removeAvatar() {
+        document.getElementById('f_img').value = '';
+        document.getElementById('img_preview').src = '';
+        document.getElementById('avatar_trigger').classList.remove('has-image');
+        if(event) event.stopPropagation();
+    }
+
+    function previewImage() {
+        const src = document.getElementById('img_preview').src;
+        if(src) {
+            document.getElementById('imageModalSrc').src = src;
+            document.getElementById('imageModal').style.display = 'flex';
+        }
+        if(event) event.stopPropagation();
+    }
+
+    function closeImageModal() {
+        document.getElementById('imageModal').style.display = 'none';
+        document.getElementById('imageModalSrc').src = '';
     }
 
     async function loadData() {
@@ -166,7 +406,11 @@
             <td><input type="checkbox" value="${item.id}" name="ids"></td>
             <td>${item.gonghao||''}</td><td>${item.xingming||''}</td><td>${item.xingbie||''}</td>
             <td>${item.zhiwei||''}</td><td>${item.lianxifangshi||''}</td>
-            <td>${item.touxiang ? `<img src="${item.touxiang}" class="avatar">` : '<div style="width:40px;height:40px;background:#f0f0f0;border-radius:4px;"></div>'}</td>
+            <td>
+                ${item.touxiang 
+                    ? `<img src="${FILE_BASE_URL + item.touxiang}" class="avatar">` 
+                    : '<div style="width:40px;height:40px;background:#f0f0f0;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#ccc;">无</div>'}
+            </td>
             <td>
               <div class="action-btns">
                 <button class="btn btn-sm btn-success" onclick='viewDetail(${JSON.stringify(item)})'>详情</button>
@@ -181,9 +425,22 @@
 
     function openModal(m) {
       mode = m; 
-      document.getElementById('modal').classList.add('show');
+      const modal = document.getElementById('modal');
+      
+      // 清除所有错误状态
+      document.querySelectorAll('.form-group').forEach(g => {
+          g.classList.remove('has-error');
+          const tip = g.querySelector('.error-tip');
+          if(tip) tip.textContent = '';
+      });
+
+      modal.classList.add('show');
+      modal.classList.remove('view-mode'); 
+
       document.getElementById('modalFooter').style.display = 'block'; 
       document.querySelectorAll('.modal-body input, .modal-body select').forEach(el => el.disabled = false);
+
+      removeAvatar(); 
 
       if(m === 'add') {
         document.getElementById('mTitle').innerText = '新增设计师';
@@ -194,6 +451,7 @@
         document.getElementById('mTitle').innerText = '设计师详情';
         document.getElementById('modalFooter').style.display = 'none';
         document.querySelectorAll('.modal-body input, .modal-body select').forEach(el => el.disabled = true);
+        modal.classList.add('view-mode');
       }
     }
 
@@ -217,17 +475,53 @@
       document.getElementById('f_sex').value = item.xingbie||'男';
       document.getElementById('f_job').value = item.zhiwei||'';
       document.getElementById('f_tel').value = item.lianxifangshi||'';
-      document.getElementById('f_img').value = item.touxiang||'';
+      
+      const imgName = item.touxiang || '';
+      document.getElementById('f_img').value = imgName;
+      if (imgName) {
+          const preview = document.getElementById('img_preview');
+          preview.src = FILE_BASE_URL + imgName;
+          document.getElementById('avatar_trigger').classList.add('has-image');
+      } else {
+          removeAvatar();
+      }
     }
 
     async function save() {
+      // 1. 获取输入元素
+      const codeInput = document.getElementById('f_code');
+      const nameInput = document.getElementById('f_name');
+      
+      const code = codeInput.value.trim();
+      const name = nameInput.value.trim();
+      
+      let hasError = false;
+
+      // 2. 验证工号
+      if (!code) { 
+          const group = codeInput.parentNode;
+          group.classList.add('has-error');
+          group.querySelector('.error-tip').textContent = '请输入设计师工号';
+          hasError = true;
+      }
+      
+      // 3. 验证姓名
+      if (!name) { 
+          const group = nameInput.parentNode;
+          group.classList.add('has-error');
+          group.querySelector('.error-tip').textContent = '请输入设计师姓名';
+          hasError = true;
+      }
+
+      if (hasError) return;
+
       const data = {
-        gonghao: document.getElementById('f_code').value,
-        xingming: document.getElementById('f_name').value,
+        gonghao: code,
+        xingming: name,
         xingbie: document.getElementById('f_sex').value,
         zhiwei: document.getElementById('f_job').value,
         lianxifangshi: document.getElementById('f_tel').value,
-        touxiang: document.getElementById('f_img').value
+        touxiang: document.getElementById('f_img').value 
       };
       if(mode==='edit') data.id = currItem.id;
       
