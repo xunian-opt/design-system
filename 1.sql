@@ -11,24 +11,11 @@
  Target Server Version : 80401 (8.4.1)
  File Encoding         : 65001
 
- Date: 15/01/2026 17:38:55
+ Date: 16/01/2026 16:40:29
 */
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
-
--- ----------------------------
--- Table structure for role
--- ----------------------------
-DROP TABLE IF EXISTS `role`;
-CREATE TABLE `role`  (
-  `id` bigint NOT NULL,
-  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  `code` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  `addtime` datetime NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE INDEX `uk_role_code`(`code` ASC) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for aboutus
@@ -224,6 +211,25 @@ INSERT INTO `orders` VALUES (1684652002004, '202305221003', 'zhuangxiushangpin',
 INSERT INTO `orders` VALUES (1684652002005, '202305231005', 'zhuangxiushangpin', 102, 1010, '方太侧吸式抽油烟机', '', 1, 3299.00, 3299.00, 3299.00, 3299.00, 1, '已发货', '上海市浦东新区张江高科路88号', '13900139002', '李四', '周末配送', '中通快递 7788990011', '2023-05-23 16:45:00');
 
 -- ----------------------------
+-- Table structure for role
+-- ----------------------------
+DROP TABLE IF EXISTS `role`;
+CREATE TABLE `role`  (
+  `id` bigint NOT NULL,
+  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `code` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `addtime` datetime NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `uk_role_code`(`code` ASC) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of role
+-- ----------------------------
+INSERT INTO `role` VALUES (1768533393637, '管理员', '00', '2026-01-16 11:16:33');
+INSERT INTO `role` VALUES (1768534597497, '设计师', '01', '2026-01-16 11:36:36');
+
+-- ----------------------------
 -- Table structure for shangpinfenlei
 -- ----------------------------
 DROP TABLE IF EXISTS `shangpinfenlei`;
@@ -295,7 +301,9 @@ CREATE TABLE `token`  (
 -- ----------------------------
 -- Records of token
 -- ----------------------------
-INSERT INTO `token` VALUES (1768374567385, 1700000000001, 'admin', 'users', '管理员', 'kcidokiz4om3sl5gt30ux6tqb1ftozyz', '2026-01-15 16:52:41', '2026-01-14 15:09:27');
+INSERT INTO `token` VALUES (1768374567385, 1700000000001, 'admin', 'users', '管理员', 'di1r6kzw3jrtiahfcnmz5vh36abz7tsv', '2026-01-16 17:32:26', '2026-01-14 15:09:27');
+INSERT INTO `token` VALUES (1768532083896, 1768442196774, 'ceshi', 'users', '管理员', '49h0mnilujsgfifivv6vsx6nx0q1vwpc', '2026-01-16 11:54:43', '2026-01-16 10:54:43');
+INSERT INTO `token` VALUES (1768534626673, 1768442196774, 'xunian', 'users', '设计师', 'nz78kimv8u33mej4fmixjacyln7z5v0o', '2026-01-16 12:37:06', '2026-01-16 11:37:06');
 
 -- ----------------------------
 -- Table structure for users
@@ -317,7 +325,7 @@ CREATE TABLE `users`  (
 -- Records of users
 -- ----------------------------
 INSERT INTO `users` VALUES (1700000000001, 'admin', '123456', '管理员', '', '13800000000', '2026-01-14 14:58:20');
-INSERT INTO `users` VALUES (1768442196774, 'xxx', '123456', '管理员', '', '17888888888', '2026-01-15 09:56:36');
+INSERT INTO `users` VALUES (1768442196774, 'xunian', '123456', '设计师', '', '17888888888', '2026-01-15 09:56:36');
 
 -- ----------------------------
 -- Table structure for yonghu
@@ -398,7 +406,6 @@ CREATE TABLE `zhuangxiushangpin`  (
 -- ----------------------------
 -- Records of zhuangxiushangpin
 -- ----------------------------
-INSERT INTO `zhuangxiushangpin` VALUES (1768458215988, '测试', '测试', '', '测试', '测试', '', 0, 0, '', NULL, 0, 4888.00, '2026-01-15 14:23:36');
 INSERT INTO `zhuangxiushangpin` VALUES (1768700000001, '高级实木地板', '地板材料', '', '1200x200x18mm', '木之源', '满2000减200', 2, 5, '高密度实木，耐磨耐压，环保等级E0。', NULL, 0, 399.00, '2026-01-15 14:16:23');
 INSERT INTO `zhuangxiushangpin` VALUES (1768700000002, '耐污内墙涂料', '墙面涂料', '', '20L', '彩涂坊', '买二送一', 3, 6, '抗霉耐污，低气味快干，适合室内墙面。', NULL, 0, 189.90, '2026-01-15 14:16:23');
 INSERT INTO `zhuangxiushangpin` VALUES (1768700000003, '现代客厅吊灯', '灯具照明', '', '120W LED', '光语', '新品九折', 1, 3, '无极调光，暖白冷白切换，低蓝光护眼。', NULL, 0, 599.00, '2026-01-15 14:16:23');
@@ -421,6 +428,7 @@ CREATE TABLE `zhuangxiuzuopin`  (
   `fengmianxinxi` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
   `fanganjieshao` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
   `neirongxiangqing` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL,
+  `shejishixingming` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
   `faburiqi` datetime NULL DEFAULT NULL,
   `addtime` datetime NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE
@@ -429,10 +437,10 @@ CREATE TABLE `zhuangxiuzuopin`  (
 -- ----------------------------
 -- Records of zhuangxiuzuopin
 -- ----------------------------
-INSERT INTO `zhuangxiuzuopin` VALUES (1684652001001, '现代简约·阳光海岸三居室', '现代简约', '', '本方案主打黑白灰极简色调，利用大面积落地窗引入自然光，打造通透舒适的居住空间。', '<p>客厅采用无主灯设计，通过磁吸轨道灯营造层次感；卧室采用温馨的木纹地板...</p>', '2023-05-20 00:00:00', '2023-05-20 10:00:00');
-INSERT INTO `zhuangxiuzuopin` VALUES (1684652001002, '欧式奢华·皇家庭院别墅', '欧式风格', '', '汲取古典欧式建筑元素，运用大理石罗马柱与水晶吊灯，展现尊贵典雅的生活品质。', '<p>挑高客厅设计，搭配精致的石膏线条；餐厅设置长桌，适合家庭聚会...</p>', '2023-06-15 00:00:00', '2023-06-15 14:30:00');
-INSERT INTO `zhuangxiuzuopin` VALUES (1684652001003, '新中式·雅致书香门第', '新中式', '', '将传统中式元素与现代材质巧妙兼柔，删繁就简，绘出富有禅意的东方美学。', '<p>书房采用原木色书柜，搭配博古架；客厅背景墙采用山水水墨画硬包...</p>', '2023-07-08 00:00:00', '2023-07-08 09:15:00');
-INSERT INTO `zhuangxiuzuopin` VALUES (1684652001004, '北欧风情·清新小户型', '北欧风格', '', '以浅色调为主，搭配原木家具与绿植点缀，营造自然、舒适、年轻化的生活氛围。', '<p>开放式厨房设计增加互动性；阳台改造为休闲区，放置懒人沙发...</p>', '2023-08-22 00:00:00', '2023-08-22 16:45:00');
-INSERT INTO `zhuangxiuzuopin` VALUES (1684652001005, '工业风·LOFT创意空间', '工业风格', '', '裸露的红砖墙与水泥顶面，搭配黑色金属铁艺，展现个性张扬的艺术气息。', '<p>二层设置为卧室私密空间，一层为开放式办公与娱乐区域，楼梯下方做储物设计...</p>', '2023-09-10 00:00:00', '2023-09-10 11:20:00');
+INSERT INTO `zhuangxiuzuopin` VALUES (1684652001001, '现代简约·阳光海岸三居室', '现代简约', '', '本方案主打黑白灰极简色调，利用大面积落地窗引入自然光，打造通透舒适的居住空间。', '<p>客厅采用无主灯设计，通过磁吸轨道灯营造层次感；卧室采用温馨的木纹地板...</p>', '钱七', '2023-05-20 00:00:00', '2023-05-20 10:00:00');
+INSERT INTO `zhuangxiuzuopin` VALUES (1684652001002, '欧式奢华·皇家庭院别墅', '欧式风格', '', '汲取古典欧式建筑元素，运用大理石罗马柱与水晶吊灯，展现尊贵典雅的生活品质。', '<p>挑高客厅设计，搭配精致的石膏线条；餐厅设置长桌，适合家庭聚会...</p>', '赵六', '2023-06-15 00:00:00', '2023-06-15 14:30:00');
+INSERT INTO `zhuangxiuzuopin` VALUES (1684652001003, '新中式·雅致书香门第', '新中式', '', '将传统中式元素与现代材质巧妙兼柔，删繁就简，绘出富有禅意的东方美学。', '<p>书房采用原木色书柜，搭配博古架；客厅背景墙采用山水水墨画硬包...</p>', '王五', '2023-07-08 00:00:00', '2023-07-08 09:15:00');
+INSERT INTO `zhuangxiuzuopin` VALUES (1684652001004, '北欧风情·清新小户型', '北欧风格', '', '以浅色调为主，搭配原木家具与绿植点缀，营造自然、舒适、年轻化的生活氛围。', '<p>开放式厨房设计增加互动性；阳台改造为休闲区，放置懒人沙发...</p>', '李四', '2023-08-22 00:00:00', '2023-08-22 16:45:00');
+INSERT INTO `zhuangxiuzuopin` VALUES (1684652001005, '工业风·LOFT创意空间', '工业风格', '', '裸露的红砖墙与水泥顶面，搭配黑色金属铁艺，展现个性张扬的艺术气息。', '<p>二层设置为卧室私密空间，一层为开放式办公与娱乐区域，楼梯下方做储物设计...</p>', '张三', '2023-09-10 00:00:00', '2023-09-10 11:20:00');
 
 SET FOREIGN_KEY_CHECKS = 1;
