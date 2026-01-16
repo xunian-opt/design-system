@@ -4,9 +4,12 @@
 
 class Navbar {
     constructor() {
-        console.log("✅ Navbar: 组件已加载，等待 DOM 就绪...");
         this.currentPath = window.location.pathname.split('/').pop() || 'index.html';
         this.init();
+    }
+
+    getApiBase() {
+        return '/springboot2z04j';
     }
 
     getMenuData() {
@@ -83,15 +86,40 @@ class Navbar {
         if (document.querySelector('.top-bar')) return;
         const topBar = document.createElement('div');
         topBar.className = 'top-bar';
+        let display = '未登录';
+        try {
+            const cachedRole = localStorage.getItem('role');
+            const cachedUser = localStorage.getItem('username');
+            if (cachedUser) {
+                display = `${cachedRole || '用户'}: ${cachedUser}`;
+            }
+        } catch(e) {}
         topBar.innerHTML = `
             <h1>装修公司管理系统</h1>
             <div class="user-info">
-                <span>管理员: admin</span>
+                <span>${display}</span>
                 <button onclick="logout()">退出登录</button>
             </div>
         `;
-        // 这里的 document.body 必须存在才能执行
         document.body.prepend(topBar);
+        let token = '';
+        try { token = localStorage.getItem('token') || ''; } catch(e) {}
+        if (token) {
+            fetch(`${this.getApiBase()}/users/session`, { headers: { 'Token': token } })
+                .then(res => res.json())
+                .then(d => {
+                    if (d && d.code === 0 && d.data) {
+                        const u = d.data;
+                        const el = topBar.querySelector('.user-info span');
+                        el.textContent = `${u.role || '用户'}: ${u.username || ''}`;
+                        try {
+                            localStorage.setItem('role', u.role || '');
+                            localStorage.setItem('username', u.username || '');
+                        } catch(e) {}
+                    }
+                })
+                .catch(() => {});
+        }
     }
 
     renderSidebar() {
@@ -162,7 +190,6 @@ class Navbar {
     init() {
         // 定义渲染函数
         const runRender = () => {
-            console.log("✅ Navbar: DOM 就绪，开始渲染...");
             this.injectStyles();
             this.renderTopBar();
             this.renderSidebar();

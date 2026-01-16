@@ -341,8 +341,9 @@
     async function resetPassword(username) {
       if (!username) { setMsg('缺少用户名，无法重置密码', 'error'); return; }
       try {
+        let token = ''; try { token = localStorage.getItem('token') || ''; } catch(e) {}
         const url = `${base}/users/resetPass?username=${encodeURIComponent(username)}`;
-        const res = await fetch(url, { method: 'GET' });
+        const res = await fetch(url, { method: 'GET', headers: token ? { 'Token': token } : {} });
         const data = await res.json().catch(() => ({}));
         if (!data || data.code !== 0) { setMsg((data && data.msg) || '重置失败', 'error'); return; }
         setMsg('密码已重置为：123456', 'success');

@@ -83,7 +83,7 @@ public class UsersController {
             return R.error("账号不存在");
         }
         user.setPassword("123456");
-        userService.update(user, null);
+        userService.updateById(user);
         return R.ok("密码已重置为：123456");
     }
 
