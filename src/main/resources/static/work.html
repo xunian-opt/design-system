@@ -50,6 +50,7 @@
     .form-group { margin-bottom: 16px; }
     .form-group label { display: block; margin-bottom: 8px; color: #333; }
     .form-group input { width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; outline: none; }
+    .form-group select { width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; outline: none; }
     .modal-footer { padding: 20px; border-top: 1px solid #f0f0f0; text-align: right; }
     .btn-cancel { background: white; border: 1px solid #d9d9d9; color: #666; margin-right: 8px; } .btn-cancel:hover { color: #333; border-color: #999; }
     
@@ -80,7 +81,7 @@
         
         <div class="table-container">
           <table>
-            <thead><tr><th><input type="checkbox" id="selAll"></th><th>索引</th><th>名称</th><th>风格</th><th>图片</th><th>操作</th></tr></thead>
+            <thead><tr><th><input type="checkbox" id="selAll"></th><th>索引</th><th>作品名称</th><th>风格</th><th>设计师</th><th>图片</th><th>操作</th></tr></thead>
             <tbody id="tbody"></tbody>
           </table>
         </div>
@@ -97,12 +98,17 @@
   <div id="modal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 id="modalTitle">新增作品</h3>
+        <h3 id="modalTitle">新增设计师作品</h3>
         <button class="modal-close" onclick="closeModal()">×</button>
       </div>
       <div class="modal-body">
-        <div class="form-group"><label>名称</label><input id="i_name"></div>
-        <div class="form-group"><label>风格</label><input id="i_style"></div>
+        <div class="form-group"><label>作品名称</label><input id="i_name"></div>
+        <div class="form-group"><label>作品风格</label><input id="i_style"></div>
+        <div class="form-group"><label>设计师</label>
+          <select id="i_designer">
+            <option value="">请选择设计师（非必填）</option>
+          </select>
+        </div>
         <div class="form-group"><label>图片URL</label><input id="i_img"></div>
       </div>
       <div class="modal-footer" id="modalFooter">
@@ -126,7 +132,7 @@
       
       // --- 暂无数据 ---
       if (list.length === 0) {
-          document.getElementById('tbody').innerHTML = '<tr><td colspan="6" style="text-align:center;color:#999;padding:20px;">暂无数据</td></tr>';
+          document.getElementById('tbody').innerHTML = '<tr><td colspan="7" style="text-align:center;color:#999;padding:20px;">暂无数据</td></tr>';
           return;
       }
 
@@ -136,6 +142,7 @@
           <td>${(page - 1) * limit + index + 1}</td>
           <td>${i.zuopinmingcheng}</td>
           <td>${i.fenggeleixing}</td>
+          <td>${i.shejishixingming||''}</td>
           <td><img src="${i.fengmianxinxi}" class="thumb"></td>
           <td>
             <div class="action-btns">
@@ -148,29 +155,32 @@
       `).join('');
     }
 
-    function openModal(mode) {
+    async function openModal(mode) {
       editId = null; 
-      document.querySelectorAll('.modal-body input').forEach(i => { i.value = ''; i.disabled = false; });
+      document.querySelectorAll('.modal-body input, .modal-body select').forEach(i => { i.value = ''; i.disabled = false; });
       document.getElementById('modal').classList.add('show');
-      document.getElementById('modalTitle').innerText = mode === 'add' ? '新增作品' : '修改作品';
+      document.getElementById('modalTitle').innerText = mode === 'add' ? '新增设计师作品' : '修改设计师作品';
       document.getElementById('modalFooter').style.display = 'block';
+      await loadDesignerOptions();
     }
 
-    function upd(i) { 
-      openModal('edit');
+    async function upd(i) { 
+      await openModal('edit');
       editId = i.id;
       document.getElementById('i_name').value = i.zuopinmingcheng;
       document.getElementById('i_style').value = i.fenggeleixing;
       document.getElementById('i_img').value = i.fengmianxinxi;
+      document.getElementById('i_designer').value = i.shejishixingming||'';
     }
 
-    function detail(i) {
-      openModal('view');
-      document.getElementById('modalTitle').innerText = '作品详情';
+    async function detail(i) {
+      await openModal('view');
+      document.getElementById('modalTitle').innerText = '设计师作品详情';
       document.getElementById('i_name').value = i.zuopinmingcheng;
       document.getElementById('i_style').value = i.fenggeleixing;
       document.getElementById('i_img').value = i.fengmianxinxi;
-      document.querySelectorAll('.modal-body input').forEach(el => el.disabled = true);
+      document.getElementById('i_designer').value = i.shejishixingming||'';
+      document.querySelectorAll('.modal-body input, .modal-body select').forEach(el => el.disabled = true);
       document.getElementById('modalFooter').style.display = 'none';
     }
 
@@ -178,10 +188,18 @@
     function resetSearch() { document.getElementById('searchName').value = ''; page = 1; load(); }
 
     async function save() {
-      const data = { zuopinmingcheng: document.getElementById('i_name').value, fenggeleixing: document.getElementById('i_style').value, fengmianxinxi: document.getElementById('i_img').value };
+      const data = { zuopinmingcheng: document.getElementById('i_name').value, fenggeleixing: document.getElementById('i_style').value, shejishixingming: document.getElementById('i_designer').value, fengmianxinxi: document.getElementById('i_img').value };
       if(editId) data.id = editId;
       await fetch(`${API}/${editId?'update':'save'}`, { method: 'POST', headers: {'Content-Type': 'application/json', 'Token': localStorage.getItem('token')}, body: JSON.stringify(data)});
       closeModal(); load();
+    }
+    
+    async function loadDesignerOptions() {
+      const res = await fetch('/springboot2z04j/yuangongxinxi/lists', { headers: {'Token': localStorage.getItem('token')} });
+      const d = await res.json();
+      const list = d.data || [];
+      const sel = document.getElementById('i_designer');
+      sel.innerHTML = '<option value="">请选择设计师（非必填）</option>' + list.map(it => `<option value="${it.xingming||''}">${it.xingming||''}</option>`).join('');
     }
 
     async function del(id) { if(confirm('确定删除?')) { await fetch(`${API}/delete`, { method: 'POST', headers: {'Content-Type': 'application/json', 'Token': localStorage.getItem('token')}, body: JSON.stringify([id]) }); load(); } }

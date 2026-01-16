@@ -125,7 +125,11 @@
         <div class="modal-form">
           <div class="form-group"><label>用户名 *</label><input type="text" id="u_username" placeholder="请输入用户名" /></div>
           <div class="form-group" id="passwordGroup"><label>密码 *</label><input type="password" id="u_password" placeholder="请输入密码" /></div>
-          <div class="form-group"><label>角色</label><input type="text" id="u_role" placeholder="请输入角色" /></div>
+          <div class="form-group"><label>角色</label>
+            <select id="u_role_select">
+              <option value="">请选择角色</option>
+            </select>
+          </div>
           <div class="form-group"><label>手机</label><input type="text" id="u_mobile" placeholder="请输入手机号码" /></div>
           <div class="form-group full-width"><label>头像地址</label><input type="text" id="u_avatar" placeholder="请输入头像URL" /></div>
         </div>
@@ -153,7 +157,7 @@
     
     // 加载用户数据（核心逻辑）
     async function loadUsers() {
-      setMsg(''); 
+      // 移除原有的 setMsg('') 调用，减少闪烁，仅在报错时显示
       let token;
       try { token = localStorage.getItem('token'); } catch (e) {}
       if (!token) { 
@@ -191,19 +195,8 @@
         renderTable(list); 
         updatePagination();
         
-        // --- 完善的提示逻辑 ---
-        if (list.length === 0) {
-            // 如果是搜索状态下没找到数据
-            if (username || role) {
-                setMsg('未查询到符合条件的用户数据', 'error');
-            }
-            // 如果是初始加载没数据，表格中已有显示，无需弹窗打扰
-        } else {
-            // 如果是在搜索状态下找到了数据
-            if (username || role) {
-                setMsg(`查询成功，共找到 ${data.data.total || list.length} 条记录`, 'success');
-            }
-        }
+        // --- 逻辑修改：移除了查询成功或未找到的弹窗提示 ---
+        // 仅在表格中显示"暂无数据"，不再干扰用户
 
       } catch (e) { 
           console.error(e);
@@ -250,8 +243,7 @@
       document.getElementById('searchUsername').value = '';
       document.getElementById('searchRole').value = ''; 
       page = 1; selectedIds.clear(); loadUsers();
-      // 重置时也给个反馈
-      setMsg('搜索条件已重置', 'success');
+      // --- 逻辑修改：移除了重置成功的弹窗 ---
     }
     
     function searchUsers() { page = 1; loadUsers(); }
@@ -285,18 +277,21 @@
     function closeUserModal() { document.getElementById('userModal').classList.remove('show'); clearUserForm(); currentUser = null; }
     function fillUserForm(u) {
       document.getElementById('u_username').value = u.username || '';
-      document.getElementById('u_role').value = u.role || '';
+      const sel = document.getElementById('u_role_select'); 
+      if (sel) { sel.value = u.role || ''; }
       document.getElementById('u_mobile').value = u.mobile || '';
       document.getElementById('u_avatar').value = u.avatar || '';
     }
-    function clearUserForm() { ['u_username', 'u_password', 'u_role', 'u_mobile', 'u_avatar'].forEach(id => document.getElementById(id).value = ''); }
-    function setUserFormDisabled(disabled) { ['u_username', 'u_password', 'u_role', 'u_mobile', 'u_avatar'].forEach(id => document.getElementById(id).disabled = disabled); }
+    function clearUserForm() { ['u_username', 'u_password', 'u_mobile', 'u_avatar'].forEach(id => document.getElementById(id).value = ''); const sel = document.getElementById('u_role_select'); if (sel) sel.value=''; }
+    function setUserFormDisabled(disabled) { ['u_username', 'u_password', 'u_mobile', 'u_avatar'].forEach(id => document.getElementById(id).disabled = disabled); const sel = document.getElementById('u_role_select'); if (sel) sel.disabled = disabled; }
     function addUser() { openUserModal('add'); }
     function editUser(id) { openUserModal('edit', id); }
     
     async function saveUser() {
       const username = document.getElementById('u_username').value.trim();
-      const role = document.getElementById('u_role').value.trim();
+      // 移除重复声明，role 已在下方由 select 元素获取
+      const roleSel = document.getElementById('u_role_select'); 
+      const role = roleSel ? (roleSel.value || '') : '';
       const mobile = document.getElementById('u_mobile').value.trim();
       const avatar = document.getElementById('u_avatar').value.trim();
       const password = document.getElementById('u_password').value.trim();
@@ -350,6 +345,18 @@
       } catch (e) { setMsg('网络错误，请稍后重试', 'error'); }
     }
 
+    async function loadRoleOptions() {
+      let token = ''; try { token = localStorage.getItem('token') || ''; } catch(e) {}
+      const sel = document.getElementById('u_role_select');
+      if (!sel) return;
+      try {
+        const res = await fetch(`${base}/role/list`, { headers: token ? { 'Token': token } : {} });
+        const data = await res.json().catch(() => ({}));
+        const list = (data && data.data) || [];
+        sel.innerHTML = '<option value="">请选择角色</option>' + list.map(r => `<option value="${r.name || ''}">${r.name || ''}</option>`).join('');
+      } catch(e) {}
+    }
+    loadRoleOptions();
     loadUsers();
   </script>
 </body>

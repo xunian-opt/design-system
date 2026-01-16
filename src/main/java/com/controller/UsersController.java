@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.entity.UsersEntity;
 import com.service.TokenService;
 import com.service.UsersService;
+import com.service.RoleService;
+import com.entity.RoleEntity;
 import com.utils.MPUtil;
 import com.utils.PageUtils;
 import com.utils.R;
@@ -30,6 +32,8 @@ public class UsersController {
 
     @Autowired
     private TokenService tokenService;
+    @Autowired
+    private RoleService roleService;
 
     /**
      * 登录
@@ -131,9 +135,15 @@ public class UsersController {
      */
     @PostMapping("/save")
     public R save(@RequestBody UsersEntity user) {
-//    	ValidatorUtils.validateEntity(user);
         if (userService.selectOne(new EntityWrapper<UsersEntity>().eq("username", user.getUsername())) != null) {
             return R.error("用户已存在");
+        }
+        if (user.getRole() == null || user.getRole().trim().isEmpty()) {
+            return R.error("角色不能为空");
+        }
+        RoleEntity role = roleService.selectOne(new EntityWrapper<RoleEntity>().eq("name", user.getRole()));
+        if (role == null) {
+            return R.error("角色不存在");
         }
         user.setId(new Date().getTime() + new Double(Math.floor(Math.random() * 1000)).longValue());
         userService.insert(user);
@@ -145,10 +155,15 @@ public class UsersController {
      */
     @RequestMapping("/update")
     public R update(@RequestBody UsersEntity user) {
-//        ValidatorUtils.validateEntity(user);
         UsersEntity u = userService.selectOne(new EntityWrapper<UsersEntity>().eq("username", user.getUsername()));
         if (u != null && u.getId() != null && !u.getId().equals(user.getId())) {
             return R.error("用户名已存在。");
+        }
+        if (user.getRole() != null && !user.getRole().trim().isEmpty()) {
+            RoleEntity role = roleService.selectOne(new EntityWrapper<RoleEntity>().eq("name", user.getRole()));
+            if (role == null) {
+                return R.error("角色不存在。");
+            }
         }
         userService.updateById(user);//全部更新
         return R.ok();

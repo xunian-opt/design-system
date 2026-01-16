@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>员工信息管理</title>
+  <title>设计师信息管理</title>
   <script src="navbar.js"></script>
   <style>
     /* 全局样式统一 */
@@ -79,10 +79,10 @@
 <body>
   <div class="main-container">
     <div class="content">
-      <div class="breadcrumb">业务管理 / <span>员工信息管理</span></div>
+      <div class="breadcrumb">业务管理 / <span>设计师信息管理</span></div>
       <div class="content-card">
         <div class="search-bar">
-          <div class="search-field"><label>工号</label><input type="text" id="s_code" placeholder="请输入工号"></div>
+          <div class="search-field"><label>设计师工号</label><input type="text" id="s_code" placeholder="请输入设计师工号"></div>
           <div class="search-field"><label>姓名</label><input type="text" id="s_name" placeholder="请输入姓名"></div>
           <button class="btn btn-search" onclick="search()">查询</button>
           <button class="btn btn-danger" onclick="reset()">重置</button>
@@ -110,7 +110,7 @@
   <div id="modal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 id="mTitle">新增员工</h3>
+        <h3 id="mTitle">新增设计师</h3> 
         <button class="modal-close" onclick="closeModal()">×</button>
       </div>
       <div class="modal-body">
@@ -186,12 +186,12 @@
       document.querySelectorAll('.modal-body input, .modal-body select').forEach(el => el.disabled = false);
 
       if(m === 'add') {
-        document.getElementById('mTitle').innerText = '新增员工';
+        document.getElementById('mTitle').innerText = '新增设计师';
         ['f_code','f_name','f_job','f_tel','f_img'].forEach(id => document.getElementById(id).value='');
       } else if (m === 'edit') {
-        document.getElementById('mTitle').innerText = '修改员工';
+        document.getElementById('mTitle').innerText = '修改设计师';
       } else if (m === 'view') {
-        document.getElementById('mTitle').innerText = '员工详情';
+        document.getElementById('mTitle').innerText = '设计师详情';
         document.getElementById('modalFooter').style.display = 'none';
         document.querySelectorAll('.modal-body input, .modal-body select').forEach(el => el.disabled = true);
       }

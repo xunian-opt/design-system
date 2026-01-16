@@ -15,6 +15,7 @@ public class ZhuangxiuzuopinEntity implements Serializable {
     private String fengmianxinxi;
     private String fanganjieshao;
     private String neirongxiangqing;
+    private String shejishixingming;
     private Date faburiqi;
     private Date addtime;
 
@@ -30,9 +31,10 @@ public class ZhuangxiuzuopinEntity implements Serializable {
     public void setFanganjieshao(String fanganjieshao) { this.fanganjieshao = fanganjieshao; }
     public String getNeirongxiangqing() { return neirongxiangqing; }
     public void setNeirongxiangqing(String neirongxiangqing) { this.neirongxiangqing = neirongxiangqing; }
+    public String getShejishixingming() { return shejishixingming; }
+    public void setShejishixingming(String shejishixingming) { this.shejishixingming = shejishixingming; }
     public Date getFaburiqi() { return faburiqi; }
     public void setFaburiqi(Date faburiqi) { this.faburiqi = faburiqi; }
     public Date getAddtime() { return addtime; }
     public void setAddtime(Date addtime) { this.addtime = addtime; }
 }
-

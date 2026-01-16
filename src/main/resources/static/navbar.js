@@ -26,7 +26,8 @@ class Navbar {
                         icon: '⚙️', 
                         text: '系统管理',
                         children: [
-                            { id: 'users.html', text: '用户管理' }
+                            { id: 'users.html', text: '用户管理' },
+                            { id: 'roles.html', text: '角色管理' }
                         ]
                     }
                 ]
@@ -35,7 +36,7 @@ class Navbar {
                 type: 'group',
                 title: '业务管理',
                 items: [
-                    { type: 'item', id: 'employees.html', icon: '👷', text: '员工信息管理' },
+                    { type: 'item', id: 'employees.html', icon: '👷', text: '设计师信息管理' },
                     { type: 'item', id: 'gongsixinxi.html', icon: '🏢', text: '公司信息管理' },
                     { type: 'item', id: 'category.html', icon: '📦', text: '商品分类管理' },
                     { type: 'item', id: 'product.html', icon: '🛍️', text: '装修商品管理' },

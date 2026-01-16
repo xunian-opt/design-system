@@ -49,7 +49,17 @@
     .modal-body { padding: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
     .form-group { display: flex; flex-direction: column; gap: 6px; }
     .form-group label { font-size: 14px; color: #333; }
-    .form-group input { width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; outline: none; }
+    
+    /* --- 修改点1：统一 select 和 input 的样式 --- */
+    .form-group input, .form-group select { 
+        width: 100%; 
+        padding: 8px 12px; 
+        border: 1px solid #d9d9d9; 
+        border-radius: 4px; 
+        outline: none; 
+        background-color: #fff; /* 确保背景一致 */
+    }
+    
     .modal-footer { padding: 20px; border-top: 1px solid #f0f0f0; text-align: right; }
     .btn-cancel { background: white; border: 1px solid #d9d9d9; color: #666; margin-right: 8px; } .btn-cancel:hover { color: #333; border-color: #999; }
     
@@ -80,7 +90,7 @@
         
         <div class="table-container">
           <table>
-            <thead><tr><th><input type="checkbox" id="selAll"></th><th>索引</th><th>名称</th><th>品牌</th><th>分类</th><th>价格</th><th>图片</th><th>操作</th></tr></thead>
+            <thead><tr><th><input type="checkbox" id="selAll"></th><th>索引</th><th>商品名称</th><th>品牌</th><th>分类名称</th><th>价格</th><th>图片</th><th>操作</th></tr></thead>
             <tbody id="tbody"></tbody>
           </table>
         </div>
@@ -103,7 +113,11 @@
       <div class="modal-body">
         <div class="form-group"><label>商品名称</label><input id="f_n"></div>
         <div class="form-group"><label>品牌</label><input id="f_b"></div>
-        <div class="form-group"><label>分类</label><input id="f_c"></div>
+        <div class="form-group"><label>分类名称</label>
+          <select id="f_c_select">
+            <option value="">请选择分类</option>
+          </select>
+        </div>
         <div class="form-group"><label>价格</label><input id="f_p" type="number"></div>
         <div class="form-group" style="grid-column: 1 / -1;"><label>图片URL</label><input id="f_i"></div>
       </div>
@@ -152,30 +166,53 @@
       `).join('');
     }
 
-    function openModal(mode) { 
+    async function loadCategoryOptions(selected = '') {
+      try {
+        const token = localStorage.getItem('token') || '';
+        const res = await fetch('/springboot2z04j/shangpinfenlei/lists', { headers: token ? { 'Token': token } : {} });
+        const data = await res.json().catch(() => ({}));
+        const list = (data && data.data) || [];
+        const sel = document.getElementById('f_c_select');
+        sel.innerHTML = '<option value=\"\">请选择分类</option>' + list.map(c => `<option value="${c.shangpinfenlei || ''}">${c.shangpinfenlei || ''}</option>`).join('');
+        if (selected) sel.value = selected;
+      } catch(e) {}
+    }
+
+    async function openModal(mode) { 
       cid = null; 
       document.querySelectorAll('.modal-body input').forEach(i => { i.value = ''; i.disabled = false; });
+      const sel = document.getElementById('f_c_select'); if (sel) { sel.value=''; sel.disabled=false; }
+      // 加载下拉数据
+      await loadCategoryOptions();
       document.getElementById('modal').classList.add('show');
       document.getElementById('modalTitle').innerText = mode === 'add' ? '新增商品' : '修改商品';
       document.getElementById('modalFooter').style.display = 'block';
     }
 
-    function edit(i) { 
-      openModal('edit');
+    // --- 修改点2：增加 async/await，确保下拉框加载完毕再赋值 ---
+    async function edit(i) { 
+      await openModal('edit'); // 等待 openModal 里的 loadCategoryOptions 执行完
       cid = i.id; 
       document.getElementById('f_n').value = i.shangpinmingcheng;
       document.getElementById('f_b').value = i.shangpinpinpai;
-      document.getElementById('f_c').value = i.shangpinfenlei;
+      
+      const sel = document.getElementById('f_c_select'); 
+      if (sel) { sel.value = i.shangpinfenlei || ''; } // 此时 options 已生成，赋值有效
+      
       document.getElementById('f_p').value = i.price;
       document.getElementById('f_i').value = i.shangpintupian;
     }
 
-    function detail(i) {
-      openModal('view');
+    // --- 修改点3：详情页同样需要 async/await ---
+    async function detail(i) {
+      await openModal('view'); // 等待
       document.getElementById('modalTitle').innerText = '商品详情';
       document.getElementById('f_n').value = i.shangpinmingcheng;
       document.getElementById('f_b').value = i.shangpinpinpai;
-      document.getElementById('f_c').value = i.shangpinfenlei;
+      
+      const sel = document.getElementById('f_c_select'); 
+      if (sel) { sel.value = i.shangpinfenlei || ''; sel.disabled = true; }
+      
       document.getElementById('f_p').value = i.price;
       document.getElementById('f_i').value = i.shangpintupian;
       // 禁用所有输入框
@@ -190,7 +227,7 @@
       const data = {
         shangpinmingcheng: document.getElementById('f_n').value,
         shangpinpinpai: document.getElementById('f_b').value,
-        shangpinfenlei: document.getElementById('f_c').value,
+        shangpinfenlei: document.getElementById('f_c_select').value,
         price: document.getElementById('f_p').value,
         shangpintupian: document.getElementById('f_i').value
       };

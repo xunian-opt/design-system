@@ -40,7 +40,7 @@ import com.utils.CommonUtil;
 import java.io.IOException;
 
 /**
- * 员工信息
+ * 设计师信息
  * 后端接口
  * @author 
  * @email 
@@ -51,9 +51,6 @@ import java.io.IOException;
 public class YuangongxinxiController {
     @Autowired
     private YuangongxinxiService yuangongxinxiService;
-
-
-    
 
 
     /**

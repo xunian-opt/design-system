@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>角色管理 - 装修公司管理系统</title>
+  <script src="navbar.js"></script>
+  <style>
+    /* 全局样式统一 */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft YaHei", sans-serif; background: #f0f2f5; min-height: 100vh; }
+    
+    /* 面包屑 */
+    .breadcrumb { margin-bottom: 20px; color: #666; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+    .breadcrumb span { color: #1890ff; }
+    
+    /* 卡片容器 */
+    .content-card { background: white; border-radius: 8px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    
+    /* 工具栏 */
+    .toolbar { display: flex; gap: 12px; margin-bottom: 20px; }
+    .btn { padding: 8px 16px; border-radius: 4px; border: none; color: white; cursor: pointer; font-size: 14px; transition: all 0.3s; display: inline-flex; align-items: center; justify-content: center; }
+    .btn-primary { background: #1890ff; } .btn-primary:hover { background: #40a9ff; }
+    .btn-danger { background: #ff4d4f; } .btn-danger:hover { background: #ff7875; }
+    
+    /* 表格样式 */
+    .table-container { overflow-x: auto; margin-bottom: 20px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    thead { background: #fafafa; }
+    th { padding: 12px 16px; text-align: left; font-weight: 600; color: #333; border-bottom: 1px solid #f0f0f0; white-space: nowrap; }
+    td { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; color: #666; vertical-align: middle; }
+    tbody tr { transition: background 0.3s; }
+    tbody tr:hover { background: #fafafa; }
+    
+    /* 分页 */
+    .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 20px; }
+    .pagination button { padding: 6px 12px; border: 1px solid #d9d9d9; background: white; border-radius: 4px; cursor: pointer; color: #666; transition: all 0.3s; }
+    .pagination button:hover:not(:disabled) { border-color: #1890ff; color: #1890ff; }
+    .pagination button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .page-info { color: #666; font-size: 14px; }
+    
+    /* 消息提示 */
+    .msg { padding: 12px 16px; margin-bottom: 16px; border-radius: 4px; display: none; font-size: 14px; }
+    .msg.show { display: block; animation: fadeIn 0.3s; }
+    .msg.success { background: #f6ffed; border: 1px solid #b7eb8f; color: #389e0d; }
+    .msg.error { background: #fff1f0; border: 1px solid #ffccc7; color: #cf1322; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    /* 弹窗样式 (统一部分) */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; }
+    .modal.show { display: flex; }
+    .modal-content { background: white; width: 500px; border-radius: 8px; max-height: 90vh; overflow-y: auto; }
+    
+    .modal-header { padding: 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
+    .modal-header h3 { font-size: 16px; margin: 0; color: #333; }
+    /* 重点统一：关闭按钮样式 */
+    .modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: #999; }
+    
+    .modal-body { padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 14px; color: #333; }
+    .form-group input { padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; outline: none; width: 100%; transition: all 0.3s; }
+    .form-group input:focus { border-color: #1890ff; box-shadow: 0 0 0 2px rgba(24,144,255,0.1); }
+    
+    .modal-footer { padding: 20px; border-top: 1px solid #f0f0f0; text-align: right; }
+    .btn-cancel { background: white; border: 1px solid #d9d9d9; color: #666; margin-right: 8px; } 
+    .btn-cancel:hover { color: #333; border-color: #999; }
+    
+    @media (max-width: 768px) {
+      .modal-content { width: 90%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="main-container">
+    <div class="content">
+      <div class="breadcrumb">系统管理 / <span>角色管理</span></div>
+      <div class="content-card">
+        <div id="msg" class="msg"></div>
+        <div class="toolbar">
+          <button class="btn btn-primary" onclick="openRoleModal('add')">新增角色</button>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr><th>索引</th><th>角色名称</th><th>角色编码</th><th>操作</th></tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+        <div class="pagination">
+          <button onclick="prevPage()" id="prevBtn">上一页</button>
+          <span class="page-info" id="pageInfo">第 1 / 1 页</span>
+          <button onclick="nextPage()" id="nextBtn">下一页</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="roleModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="roleModalTitle">新增角色</h3>
+        <button class="modal-close" onclick="closeRoleModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>角色名称 *</label>
+          <input type="text" id="r_name" placeholder="请输入角色名称" />
+        </div>
+        <div class="form-group">
+          <label>角色编码 *</label>
+          <input type="text" id="r_code" placeholder="请输入角色编码" />
+        </div>
+      </div>
+      <div class="modal-footer" id="roleModalFooter">
+        <button class="btn btn-cancel" onclick="closeRoleModal()">取消</button>
+        <button class="btn btn-primary" onclick="saveRole()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const base = '/springboot2z04j';
+    let page = 1, limit = 10, totalPage = 1, roleModalMode = 'add', currentRole = null;
+    
+    function setMsg(text, type) {
+      const el = document.getElementById('msg');
+      if (!text) { el.className = 'msg'; el.textContent = ''; return; }
+      el.textContent = text; 
+      // 适配 CSS 类名
+      el.className = `msg ${type} show`;
+      setTimeout(() => { el.className = 'msg'; }, 3000);
+    }
+
+    async function loadRoles() {
+      setMsg('');
+      let token = ''; try { token = localStorage.getItem('token') || ''; } catch(e) {}
+      if (!token) { setMsg('未登录或会话过期', 'error'); setTimeout(() => { window.location.href = 'index.html'; }, 1200); return; }
+      try {
+        let url = `${base}/role/page?page=${page}&limit=${limit}`;
+        const res = await fetch(url, { headers: { 'Token': token } });
+        const data = await res.json().catch(() => ({}));
+        if (!data || data.code !== 0) { setMsg((data && data.msg) || '加载失败', 'error'); return; }
+        const list = (data.data && data.data.list) || [];
+        totalPage = (data.data && data.data.totalPage) || 1;
+        page = (data.data && data.data.currPage) || page;
+        window._rolesCache = list;
+        renderTable(list);
+        updatePagination();
+      } catch (e) { setMsg('网络错误，请稍后重试', 'error'); }
+    }
+    
+    function renderTable(list) {
+      const tbody = document.getElementById('tbody');
+      if (list.length === 0) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#999;padding:20px;">暂无数据</td></tr>'; return; }
+      tbody.innerHTML = list.map((row, index) => `
+        <tr>
+          <td>${(page - 1) * limit + index + 1}</td>
+          <td>${row.name || ''}</td>
+          <td>${row.code || ''}</td>
+          <td>
+            <button class="btn btn-primary" onclick="editRole(${row.id})">修改</button>
+            <button class="btn btn-danger" onclick="deleteRole(${row.id})">删除</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+    
+    function updatePagination() {
+      document.getElementById('pageInfo').textContent = `第 ${page} / ${totalPage} 页`;
+      document.getElementById('prevBtn').disabled = page <= 1;
+      document.getElementById('nextBtn').disabled = page >= totalPage;
+    }
+    function prevPage() { if (page > 1) { page--; loadRoles(); } }
+    function nextPage() { if (page < totalPage) { page++; loadRoles(); } }
+    
+    function openRoleModal(mode, id = null) {
+      roleModalMode = mode;
+      const modal = document.getElementById('roleModal');
+      const title = document.getElementById('roleModalTitle');
+      if (mode === 'add') { title.textContent = '新增角色'; clearRoleForm(); currentRole = null; }
+      else if (mode === 'edit') {
+        title.textContent = '修改角色';
+        const role = (window._rolesCache || []).find(r => r.id === id);
+        if (role) { currentRole = role; fillRoleForm(role); }
+      }
+      modal.classList.add('show');
+    }
+    
+    function closeRoleModal() { document.getElementById('roleModal').classList.remove('show'); clearRoleForm(); currentRole = null; }
+    function fillRoleForm(r) { document.getElementById('r_name').value = r.name || ''; document.getElementById('r_code').value = r.code || ''; }
+    function clearRoleForm() { ['r_name','r_code'].forEach(id => document.getElementById(id).value = ''); }
+    
+    async function saveRole() {
+      const name = document.getElementById('r_name').value.trim();
+      const code = document.getElementById('r_code').value.trim();
+      if (!name || !code) { setMsg('请填写角色名称与编码', 'error'); return; }
+      let token = ''; try { token = localStorage.getItem('token') || ''; } catch(e) {}
+      if (!token) { setMsg('未登录或会话过期', 'error'); setTimeout(() => { window.location.href = 'index.html'; }, 1200); return; }
+      const payload = { name, code };
+      let url = `${base}/role/save`;
+      if (roleModalMode === 'edit' && currentRole && currentRole.id != null) { url = `${base}/role/update`; payload.id = currentRole.id; }
+      try {
+        const res = await fetch(url, { method: 'POST', headers: { 'Token': token, 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        const data = await res.json().catch(() => ({}));
+        if (!data || data.code !== 0) { setMsg((data && data.msg) || '操作失败', 'error'); return; }
+        setMsg(roleModalMode === 'edit' ? '修改成功！' : '添加成功！', 'success'); closeRoleModal(); loadRoles();
+      } catch (e) { setMsg('网络错误，请稍后重试', 'error'); }
+    }
+    
+    async function deleteRole(id) {
+      if (!confirm('确定要删除该角色吗?')) return;
+      let token = ''; try { token = localStorage.getItem('token') || ''; } catch(e) {}
+      if (!token) { setMsg('未登录或会话过期', 'error'); setTimeout(() => { window.location.href = 'index.html'; }, 1200); return; }
+      try {
+        const url = `${base}/role/delete`;
+        const res = await fetch(url, { method: 'POST', headers: { 'Token': token, 'Content-Type': 'application/json' }, body: JSON.stringify([id]) });
+        const data = await res.json().catch(() => ({}));
+        if (!data || data.code !== 0) { setMsg((data && data.msg) || '删除失败', 'error'); return; }
+        setMsg('删除成功！', 'success'); loadRoles();
+      } catch (e) { setMsg('网络错误，请稍后重试', 'error'); }
+    }
+    function editRole(id) { openRoleModal('edit', id); }
+    loadRoles();
+  </script>
+</body>
+</html>
