@@ -15,15 +15,11 @@ mysql (17张表)
 ## 运行截图
 
 ### 前台
-
+先不放、等项目完成后再更新
+目测会添加AI功能
 
 ### 后台
-![后台截图1](src/main/resources/static/upload/image-1.png)
-![后台截图2](src/main/resources/static/upload/image-2.png)
-![后台截图3](src/main/resources/static/upload/image-3.png)
-![后台截图4](src/main/resources/static/upload/image-4.png)
-![后台截图5](src/main/resources/static/upload/image-5.png)
-![后台截图6](src/main/resources/static/upload/image-6.png)
+先不放、等项目完成后再更新
 
 ## 需要看运行视频或源码
 
