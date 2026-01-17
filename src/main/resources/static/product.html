@@ -47,19 +47,30 @@
     .modal-header h3 { font-size: 16px; margin: 0; }
     .modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: #999; }
     .modal-body { padding: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    .form-group { display: flex; flex-direction: column; gap: 6px; }
-    .form-group label { font-size: 14px; color: #333; }
     
-    /* --- 修改点1：统一 select 和 input 的样式 --- */
+    /* 表单与错误提示样式 */
+    .form-group { display: flex; flex-direction: column; gap: 6px; position: relative; }
+    .form-group label { font-size: 14px; color: #333; }
     .form-group input, .form-group select { 
         width: 100%; 
         padding: 8px 12px; 
         border: 1px solid #d9d9d9; 
         border-radius: 4px; 
         outline: none; 
-        background-color: #fff; /* 确保背景一致 */
+        background-color: #fff; 
+        transition: border-color 0.3s;
     }
     
+    .error-tip {
+        color: #ff4d4f;
+        font-size: 12px;
+        margin-top: -2px;
+        min-height: 18px; 
+        display: none;
+    }
+    .form-group.has-error input { border-color: #ff4d4f; }
+    .form-group.has-error .error-tip { display: block; }
+
     .modal-footer { padding: 20px; border-top: 1px solid #f0f0f0; text-align: right; }
     .btn-cancel { background: white; border: 1px solid #d9d9d9; color: #666; margin-right: 8px; } .btn-cancel:hover { color: #333; border-color: #999; }
     
@@ -67,6 +78,109 @@
     .pagination button { padding: 6px 12px; border: 1px solid #d9d9d9; background: white; border-radius: 4px; cursor: pointer; color: #666; }
     .pagination button:hover:not(:disabled) { border-color: #1890ff; color: #1890ff; }
     .page-info { color: #666; font-size: 14px; }
+
+    /* --- 消息提示 --- */
+    .msg { padding: 12px 16px; margin-bottom: 16px; border-radius: 4px; display: none; font-size: 14px; }
+    .msg.show { display: block; animation: fadeIn 0.3s; }
+    .msg.success { background: #f6ffed; border: 1px solid #b7eb8f; color: #389e0d; }
+    .msg.error { background: #fff1f0; border: 1px solid #ffccc7; color: #cf1322; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* --- 多图上传组件样式 --- */
+    .multi-image-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 5px;
+    }
+
+    /* 单个图片项 */
+    .image-item {
+        width: 100px;
+        height: 100px;
+        position: relative;
+        border-radius: 6px;
+        overflow: hidden;
+        border: 1px solid #d9d9d9;
+    }
+    .image-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    /* 遮罩层 */
+    .image-mask {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+        opacity: 0;
+        transition: opacity 0.3s;
+        z-index: 10;
+    }
+    .image-item:hover .image-mask { opacity: 1; display: flex; }
+
+    /* 操作图标 */
+    .action-icon {
+        color: white;
+        font-size: 18px;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    .action-icon:hover { transform: scale(1.1); }
+
+    /* 上传触发按钮 */
+    .upload-trigger {
+        width: 100px;
+        height: 100px;
+        border: 1px dashed #d9d9d9;
+        border-radius: 6px;
+        cursor: pointer;
+        background: #fafafa;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: #8c939d;
+        transition: border-color 0.3s;
+    }
+    .upload-trigger:hover { border-color: #1890ff; color: #1890ff; }
+    .upload-trigger-icon { font-size: 24px; font-weight: 100; margin-bottom: 4px; }
+    .upload-trigger-text { font-size: 12px; }
+
+    /* 详情模式下隐藏的内容 */
+    .modal.view-mode .delete-icon { display: none !important; }
+    
+    /* 详情模式下的上传按钮样式（作为占位符） */
+    .modal.view-mode .upload-trigger {
+        border-style: solid;
+        border-color: #eee;
+        cursor: default;
+    }
+    .modal.view-mode .upload-trigger:hover { border-color: #eee; color: #8c939d; }
+
+    /* 全屏图片预览 */
+    .image-modal {
+        display: none;
+        position: fixed;
+        z-index: 3000;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background-color: rgba(0,0,0,0.8);
+        align-items: center;
+        justify-content: center;
+        cursor: zoom-out;
+    }
+    .image-modal img {
+        max-width: 90%;
+        max-height: 90%;
+        object-fit: contain;
+        box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
   </style>
 </head>
 <body>
@@ -88,6 +202,8 @@
           <button class="btn btn-danger" onclick="delBatch()">批量删除</button>
         </div>
         
+        <div id="msg" class="msg"></div>
+
         <div class="table-container">
           <table>
             <thead><tr><th><input type="checkbox" id="selAll"></th><th>索引</th><th>商品名称</th><th>品牌</th><th>分类名称</th><th>价格</th><th>图片</th><th>操作</th></tr></thead>
@@ -111,15 +227,36 @@
         <button class="modal-close" onclick="closeModal()">×</button>
       </div>
       <div class="modal-body">
-        <div class="form-group"><label>商品名称</label><input id="f_n"></div>
-        <div class="form-group"><label>品牌</label><input id="f_b"></div>
+        <div class="form-group">
+            <label>商品名称 <span style="color:red">*</span></label>
+            <input id="f_n" oninput="clearError(this)">
+            <div class="error-tip"></div>
+        </div>
+        
+        <div class="form-group">
+            <label>品牌 <span style="color:red">*</span></label>
+            <input id="f_b" oninput="clearError(this)">
+            <div class="error-tip"></div>
+        </div>
+        
         <div class="form-group"><label>分类名称</label>
           <select id="f_c_select">
             <option value="">请选择分类</option>
           </select>
         </div>
         <div class="form-group"><label>价格</label><input id="f_p" type="number"></div>
-        <div class="form-group" style="grid-column: 1 / -1;"><label>图片URL</label><input id="f_i"></div>
+        
+        <div class="form-group full-width" style="grid-column: 1 / -1;">
+            <label>图片URL <span style="font-size:12px; color:#999; font-weight:normal;">(最多9张)</span></label>
+            <div class="multi-image-list" id="imageListContainer">
+                <div class="upload-trigger" id="upload_trigger" onclick="triggerUploadClick()">
+                    <span class="upload-trigger-icon" id="up_icon">+</span>
+                    <span class="upload-trigger-text" id="up_text">点击上传</span>
+                </div>
+            </div>
+            <input type="file" id="file_input" accept="image/*" multiple onchange="uploadImg()" style="display: none;">
+            <input type="hidden" id="f_i">
+        </div>
       </div>
       <div class="modal-footer" id="modalFooter">
         <button class="btn btn-cancel" onclick="closeModal()">取消</button>
@@ -128,9 +265,38 @@
     </div>
   </div>
 
+  <div id="imageModal" class="image-modal" onclick="closeImageModal()">
+      <img id="imageModalSrc" src="" onclick="event.stopPropagation()">
+  </div>
+
   <script>
     const API = '/springboot2z04j/zhuangxiushangpin';
-    let cid = null, page = 1, limit = 10, totalPage = 1;
+    const UPLOAD_URL = '/springboot2z04j/file/upload'; 
+    const FILE_BASE_URL = '/springboot2z04j/upload/'; 
+    
+    let cid = null, page = 1, limit = 10, totalPage = 1, mode = 'add';
+    let currentImageList = [];
+
+    function showMsg(text, type) {
+      const el = document.getElementById('msg');
+      if (!text) { el.className = 'msg'; el.textContent = ''; return; }
+      el.textContent = text; 
+      el.className = `msg ${type} show`;
+      setTimeout(() => { el.className = 'msg'; }, 3000);
+    }
+
+    function clearError(input) {
+        const group = input.parentNode;
+        group.classList.remove('has-error');
+        const tip = group.querySelector('.error-tip');
+        if (tip) tip.textContent = '';
+    }
+
+    function triggerUploadClick() {
+        if (mode !== 'view') {
+            document.getElementById('file_input').click();
+        }
+    }
 
     async function load() {
       const n = document.getElementById('searchName').value;
@@ -140,13 +306,18 @@
       totalPage = d.data.totalPage || 1;
       document.getElementById('pageInfo').innerText = `${page} / ${totalPage}`;
       
-      // --- 暂无数据判断 ---
       if (list.length === 0) {
           document.getElementById('tbody').innerHTML = '<tr><td colspan="8" style="text-align:center;color:#999;padding:20px;">暂无数据</td></tr>';
           return;
       }
 
-      document.getElementById('tbody').innerHTML = list.map((i, index) => `
+      document.getElementById('tbody').innerHTML = list.map((i, index) => {
+        let firstImg = '';
+        if(i.shangpintupian) {
+            const imgs = i.shangpintupian.split(',');
+            if(imgs.length > 0) firstImg = imgs[0];
+        }
+        return `
         <tr>
           <td><input type="checkbox" value="${i.id}" name="ids"></td>
           <td>${(page - 1) * limit + index + 1}</td>
@@ -154,7 +325,9 @@
           <td>${i.shangpinpinpai}</td>
           <td>${i.shangpinfenlei}</td>
           <td>${i.price}</td>
-          <td><img src="${i.shangpintupian}" class="thumb"></td>
+          <td>${firstImg 
+              ? `<img src="${FILE_BASE_URL + firstImg}" class="thumb">` 
+              : '<span style="color:#999;font-size:12px;">暂无数据</span>'}</td>
           <td>
             <div class="action-btns">
               <button class="btn btn-sm btn-success" onclick='detail(${JSON.stringify(i)})'>详情</button>
@@ -163,7 +336,7 @@
             </div>
           </td>
         </tr>
-      `).join('');
+      `}).join('');
     }
 
     async function loadCategoryOptions(selected = '') {
@@ -178,55 +351,216 @@
       } catch(e) {}
     }
 
-    async function openModal(mode) { 
-      cid = null; 
-      document.querySelectorAll('.modal-body input').forEach(i => { i.value = ''; i.disabled = false; });
-      const sel = document.getElementById('f_c_select'); if (sel) { sel.value=''; sel.disabled=false; }
-      // 加载下拉数据
-      await loadCategoryOptions();
-      document.getElementById('modal').classList.add('show');
-      document.getElementById('modalTitle').innerText = mode === 'add' ? '新增商品' : '修改商品';
-      document.getElementById('modalFooter').style.display = 'block';
+    // --- 多图上传逻辑 ---
+    async function uploadImg() {
+        const fileInput = document.getElementById('file_input');
+        const files = fileInput.files;
+        if (!files || files.length === 0) return;
+
+        if (currentImageList.length + files.length > 9) {
+            showMsg('最多只能上传9张图片', 'error');
+            fileInput.value = '';
+            return;
+        }
+
+        let successCount = 0;
+        for (let i = 0; i < files.length; i++) {
+            const formData = new FormData();
+            formData.append('file', files[i]);
+            try {
+                const res = await fetch(UPLOAD_URL, {
+                    method: 'POST',
+                    headers: { 'Token': localStorage.getItem('token') },
+                    body: formData
+                });
+                const data = await res.json();
+                if (data.code === 0) {
+                    currentImageList.push(data.file);
+                    successCount++;
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        if (successCount > 0) {
+            updateHiddenInput();
+            renderImages();
+        } else {
+            showMsg('上传失败', 'error');
+        }
+        fileInput.value = '';
     }
 
-    // --- 修改点2：增加 async/await，确保下拉框加载完毕再赋值 ---
+    function renderImages() {
+        const container = document.getElementById('imageListContainer');
+        const trigger = document.getElementById('upload_trigger');
+        const icon = document.getElementById('up_icon');
+        const text = document.getElementById('up_text');
+        
+        const items = container.querySelectorAll('.image-item');
+        items.forEach(el => el.remove());
+
+        currentImageList.forEach((fileName, index) => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'image-item';
+            itemDiv.innerHTML = `
+                <img src="${FILE_BASE_URL + fileName}">
+                <div class="image-mask">
+                    <div class="action-icon" title="放大查看" onclick="previewImage('${FILE_BASE_URL + fileName}')">
+                        <svg viewBox="0 0 1024 1024" width="20" height="20" fill="currentColor"><path d="M854.6 288.7c6.2 0 11.2 5 11.2 11.2v468.6c0 6.2-5 11.2-11.2 11.2H169.4c-6.2 0-11.2-5-11.2-11.2V299.9c0-6.2 5-11.2 11.2-11.2h685.2m0-65H169.4C127.2 223.7 93 257.9 93 300.1v468.4c0 42.2 34.2 76.4 76.4 76.4h685.2c42.2 0 76.4-34.2 76.4-76.4V299.9c0-42.2-34.2-76.2-76.4-76.2z"/><path d="M492 346c-99.2 0-180 80.8-180 180s80.8 180 180 180 180-80.8 180-180-80.8-180-180-180zm0 318c-76.1 0-138-61.9-138-138s61.9-138 138-138 138 61.9 138 138-61.9 138-138 138z"/><path d="M621.5 593l-64-64 29.7-29.7 64 64z"/></svg>
+                    </div>
+                    <div class="action-icon delete-icon" title="删除" onclick="removeImage(${index})">
+                        <svg viewBox="0 0 1024 1024" width="20" height="20" fill="currentColor"><path d="M784 256h-168v-48c0-26.5-21.5-48-48-48H456c-26.5 0-48 21.5-48 48v48H240c-17.7 0-32 14.3-32 32s14.3 32 32 32h32v488c0 44.2 35.8 80 80 80h320c44.2 0 80-35.8 80-80V320h32c17.7 0 32-14.3 32-32s-14.3-32-32-32zM472 208h80v48h-80v-48zm264 600H288V320h448v488zM424 400c0-17.7 14.3-32 32-32s32 14.3 32 32v280c0 17.7-14.3 32-32 32s-32-14.3-32-32V400zm144 0c0-17.7 14.3-32 32-32s32 14.3 32 32v280c0 17.7-14.3 32-32 32s-32-14.3-32-32V400z"/></svg>
+                    </div>
+                </div>
+            `;
+            container.insertBefore(itemDiv, trigger);
+        });
+
+        // 状态控制逻辑
+        if (mode === 'view') {
+            if (currentImageList.length === 0) {
+                // 详情模式且无图片：显示“暂无数据”占位
+                trigger.style.display = 'flex';
+                icon.style.display = 'none';
+                text.innerText = '暂无数据';
+            } else {
+                // 详情模式有图片：隐藏上传按钮
+                trigger.style.display = 'none';
+            }
+        } else {
+            // 编辑模式
+            if (currentImageList.length >= 9) {
+                trigger.style.display = 'none';
+            } else {
+                // 恢复正常上传样式
+                trigger.style.display = 'flex';
+                icon.style.display = 'block';
+                text.innerText = '点击上传';
+            }
+        }
+    }
+
+    function removeImage(index) {
+        currentImageList.splice(index, 1);
+        updateHiddenInput();
+        renderImages();
+    }
+
+    function updateHiddenInput() {
+        document.getElementById('f_i').value = currentImageList.join(',');
+    }
+
+    function previewImage(src) {
+        document.getElementById('imageModalSrc').src = src;
+        document.getElementById('imageModal').style.display = 'flex';
+    }
+    
+    function closeImageModal() {
+        document.getElementById('imageModal').style.display = 'none';
+        document.getElementById('imageModalSrc').src = '';
+    }
+
+    // ---
+
+    async function openModal(m) { 
+      mode = m; 
+      cid = null; 
+      const modal = document.getElementById('modal');
+      
+      document.querySelectorAll('.form-group').forEach(g => {
+          g.classList.remove('has-error');
+          const tip = g.querySelector('.error-tip');
+          if(tip) tip.textContent = '';
+      });
+
+      modal.classList.add('show');
+      modal.classList.remove('view-mode');
+
+      document.getElementById('modalFooter').style.display = 'block';
+      document.querySelectorAll('.modal-body input').forEach(i => { i.value = ''; i.disabled = false; });
+      const sel = document.getElementById('f_c_select'); if (sel) { sel.value=''; sel.disabled=false; }
+      
+      currentImageList = [];
+      updateHiddenInput();
+      renderImages();
+
+      await loadCategoryOptions();
+      
+      if(m === 'add') {
+          document.getElementById('modalTitle').innerText = '新增商品';
+      } else if (m === 'edit') {
+          document.getElementById('modalTitle').innerText = '修改商品';
+      } else if (m === 'view') {
+          document.getElementById('modalTitle').innerText = '商品详情';
+          document.getElementById('modalFooter').style.display = 'none';
+          document.querySelectorAll('.modal-body input, .modal-body select').forEach(el => el.disabled = true);
+          modal.classList.add('view-mode');
+          renderImages();
+      }
+    }
+
     async function edit(i) { 
-      await openModal('edit'); // 等待 openModal 里的 loadCategoryOptions 执行完
+      await openModal('edit'); 
       cid = i.id; 
       document.getElementById('f_n').value = i.shangpinmingcheng;
       document.getElementById('f_b').value = i.shangpinpinpai;
-      
       const sel = document.getElementById('f_c_select'); 
-      if (sel) { sel.value = i.shangpinfenlei || ''; } // 此时 options 已生成，赋值有效
-      
+      if (sel) { sel.value = i.shangpinfenlei || ''; } 
       document.getElementById('f_p').value = i.price;
-      document.getElementById('f_i').value = i.shangpintupian;
+      
+      if (i.shangpintupian) {
+          currentImageList = i.shangpintupian.split(',');
+      } else {
+          currentImageList = [];
+      }
+      updateHiddenInput();
+      renderImages();
     }
 
-    // --- 修改点3：详情页同样需要 async/await ---
     async function detail(i) {
-      await openModal('view'); // 等待
-      document.getElementById('modalTitle').innerText = '商品详情';
+      await openModal('view'); 
       document.getElementById('f_n').value = i.shangpinmingcheng;
       document.getElementById('f_b').value = i.shangpinpinpai;
-      
       const sel = document.getElementById('f_c_select'); 
-      if (sel) { sel.value = i.shangpinfenlei || ''; sel.disabled = true; }
-      
+      if (sel) { sel.value = i.shangpinfenlei || ''; }
       document.getElementById('f_p').value = i.price;
-      document.getElementById('f_i').value = i.shangpintupian;
-      // 禁用所有输入框
-      document.querySelectorAll('.modal-body input').forEach(el => el.disabled = true);
-      document.getElementById('modalFooter').style.display = 'none';
+      
+      if (i.shangpintupian) {
+          currentImageList = i.shangpintupian.split(',');
+      } else {
+          currentImageList = [];
+      }
+      updateHiddenInput();
+      renderImages();
     }
 
     function closeModal() { document.getElementById('modal').classList.remove('show'); }
     function resetSearch() { document.getElementById('searchName').value = ''; page = 1; load(); }
 
     async function save() {
+      const nameInput = document.getElementById('f_n');
+      const brandInput = document.getElementById('f_b');
+      const nameVal = nameInput.value.trim();
+      const brandVal = brandInput.value.trim();
+      let hasError = false;
+
+      if (!nameVal) { 
+          const group = nameInput.parentNode;
+          group.classList.add('has-error');
+          group.querySelector('.error-tip').textContent = '请输入商品名称';
+          hasError = true;
+      }
+      if (!brandVal) { 
+          const group = brandInput.parentNode;
+          group.classList.add('has-error');
+          group.querySelector('.error-tip').textContent = '请输入品牌';
+          hasError = true;
+      }
+      if(hasError) return;
+
       const data = {
-        shangpinmingcheng: document.getElementById('f_n').value,
-        shangpinpinpai: document.getElementById('f_b').value,
+        shangpinmingcheng: nameVal,
+        shangpinpinpai: brandVal,
         shangpinfenlei: document.getElementById('f_c_select').value,
         price: document.getElementById('f_p').value,
         shangpintupian: document.getElementById('f_i').value

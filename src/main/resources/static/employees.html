@@ -30,14 +30,14 @@
     .table-container { overflow-x: auto; margin-bottom: 20px; }
     table { width: 100%; border-collapse: collapse; font-size: 14px; }
     thead { background: #fafafa; }
-    th { padding: 12px 16px; text-align: left; font-weight: 600; color: #333; border-bottom: 1px solid #f0f0f0; white-space: nowrap; }
-    td { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; color: #666; vertical-align: middle; }
+    th { padding: 12px 16px; text-align: center; font-weight: 600; color: #333; border-bottom: 1px solid #f0f0f0; white-space: nowrap; }
+    td { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; color: #666; vertical-align: middle; text-align: center; }
     tbody tr { transition: background 0.3s; }
     tbody tr:hover { background: #fafafa; }
     
     .avatar { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; }
     
-    .action-btns { display: flex; gap: 8px; }
+    .action-btns { display: flex; gap: 8px; justify-content: center; }
     .btn-sm { padding: 4px 12px; font-size: 12px; }
     .btn-info { background: #1890ff; } .btn-info:hover { background: #40a9ff; }
     .btn-success { background: #52c41a; } .btn-success:hover { background: #73d13d; }
@@ -168,6 +168,16 @@
         display: none !important;
     }
 
+    /* 详情模式下，没有图片时的占位符样式 */
+    .modal.view-mode .avatar-uploader-trigger {
+        cursor: default; /* 禁用手型 */
+        border-style: solid;
+        border-color: #eee;
+    }
+    .modal.view-mode .avatar-uploader-trigger:hover {
+        border-color: #eee; /* 悬停不显示蓝色边框 */
+    }
+
     .image-modal {
         display: none;
         position: fixed;
@@ -254,8 +264,8 @@
                 
                 <div class="avatar-uploader-trigger" id="avatar_trigger" onclick="triggerFileClick(event)">
                     <div class="avatar-placeholder">
-                        <span class="avatar-placeholder-icon">+</span>
-                        <span class="avatar-placeholder-text">点击上传头像</span>
+                        <span class="avatar-placeholder-icon" id="placeholder_icon">+</span>
+                        <span class="avatar-placeholder-text" id="placeholder_text">点击上传头像</span>
                     </div>
 
                     <img id="img_preview" class="avatar-preview-img" src="">
@@ -344,7 +354,7 @@
                 preview.src = FILE_BASE_URL + fileName;
                 document.getElementById('avatar_trigger').classList.add('has-image');
                 
-                // --- 修改：删除了 showMsg 调用 ---
+                // 上传成功不显示提示
             } else {
                 showMsg(data.msg || '上传失败', 'error');
                 removeAvatar();
@@ -361,6 +371,11 @@
         document.getElementById('f_img').value = '';
         document.getElementById('img_preview').src = '';
         document.getElementById('avatar_trigger').classList.remove('has-image');
+        
+        // 恢复上传提示文字
+        document.getElementById('placeholder_icon').style.display = 'inline';
+        document.getElementById('placeholder_text').innerText = '点击上传头像';
+        
         if(event) event.stopPropagation();
     }
 
@@ -409,7 +424,7 @@
             <td>
                 ${item.touxiang 
                     ? `<img src="${FILE_BASE_URL + item.touxiang}" class="avatar">` 
-                    : '<div style="width:40px;height:40px;background:#f0f0f0;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#ccc;">无</div>'}
+                    : '<span style="color:#999;font-size:12px;">暂无数据</span>'}
             </td>
             <td>
               <div class="action-btns">
@@ -427,7 +442,6 @@
       mode = m; 
       const modal = document.getElementById('modal');
       
-      // 清除所有错误状态
       document.querySelectorAll('.form-group').forEach(g => {
           g.classList.remove('has-error');
           const tip = g.querySelector('.error-tip');
@@ -483,12 +497,16 @@
           preview.src = FILE_BASE_URL + imgName;
           document.getElementById('avatar_trigger').classList.add('has-image');
       } else {
+          // --- 修改点：无图片时显示暂无数据 ---
           removeAvatar();
+          if(mode === 'view') {
+              document.getElementById('placeholder_icon').style.display = 'none';
+              document.getElementById('placeholder_text').innerText = '暂无数据';
+          }
       }
     }
 
     async function save() {
-      // 1. 获取输入元素
       const codeInput = document.getElementById('f_code');
       const nameInput = document.getElementById('f_name');
       
@@ -497,7 +515,6 @@
       
       let hasError = false;
 
-      // 2. 验证工号
       if (!code) { 
           const group = codeInput.parentNode;
           group.classList.add('has-error');
@@ -505,7 +522,6 @@
           hasError = true;
       }
       
-      // 3. 验证姓名
       if (!name) { 
           const group = nameInput.parentNode;
           group.classList.add('has-error');

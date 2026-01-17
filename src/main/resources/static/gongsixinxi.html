@@ -29,12 +29,15 @@
     .table-container { overflow-x: auto; margin-bottom: 20px; }
     table { width: 100%; border-collapse: collapse; font-size: 14px; }
     thead { background: #fafafa; }
-    th { padding: 12px 16px; text-align: left; font-weight: 600; color: #333; border-bottom: 1px solid #f0f0f0; white-space: nowrap; }
-    td { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; color: #666; vertical-align: middle; }
+    
+    /* 表格内容居中 */
+    th { padding: 12px 16px; text-align: center; font-weight: 600; color: #333; border-bottom: 1px solid #f0f0f0; white-space: nowrap; }
+    td { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; color: #666; vertical-align: middle; text-align: center; }
+    
     tbody tr:hover { background: #fafafa; }
     .thumb { width: 60px; height: 60px; object-fit: cover; border-radius: 4px; }
     
-    .action-btns { display: flex; gap: 8px; }
+    .action-btns { display: flex; gap: 8px; justify-content: center; }
     .btn-sm { padding: 4px 12px; font-size: 12px; }
     .btn-info { background: #1890ff; } .btn-info:hover { background: #40a9ff; }
     .btn-success { background: #52c41a; } .btn-success:hover { background: #73d13d; }
@@ -146,7 +149,14 @@
 
     /* 详情模式下隐藏的内容 */
     .modal.view-mode .delete-icon { display: none !important; }
-    .modal.view-mode .upload-trigger { display: none !important; }
+    
+    /* 详情模式下的上传按钮样式（作为占位符） */
+    .modal.view-mode .upload-trigger {
+        border-style: solid;
+        border-color: #eee;
+        cursor: default;
+    }
+    .modal.view-mode .upload-trigger:hover { border-color: #eee; color: #8c939d; }
 
     /* 全屏图片预览 */
     .image-modal {
@@ -221,9 +231,9 @@
         <div class="form-group full-width">
             <label>公司照片 <span style="font-size:12px; color:#999; font-weight:normal;">(最多9张)</span></label>
             <div class="multi-image-list" id="imageListContainer">
-                <div class="upload-trigger" id="upload_trigger" onclick="document.getElementById('file_input').click()">
-                    <span class="upload-trigger-icon">+</span>
-                    <span class="upload-trigger-text">点击上传</span>
+                <div class="upload-trigger" id="upload_trigger" onclick="triggerUploadClick()">
+                    <span class="upload-trigger-icon" id="up_icon">+</span>
+                    <span class="upload-trigger-text" id="up_text">点击上传</span>
                 </div>
             </div>
             <input type="file" id="file_input" accept="image/*" multiple onchange="uploadImg()" style="display: none;">
@@ -251,7 +261,7 @@
     const FILE_BASE_URL = '/springboot2z04j/upload/'; 
     
     let currId = null, mode = 'add', page = 1, limit = 10, totalPage = 1;
-    let currentImageList = []; // 用于维护当前上传的图片列表
+    let currentImageList = [];
 
     function showMsg(txt, type) {
       const m = document.getElementById('msg');
@@ -264,6 +274,13 @@
         group.classList.remove('has-error');
         const tip = group.querySelector('.error-tip');
         if (tip) tip.textContent = '';
+    }
+
+    function triggerUploadClick() {
+        // 仅在非详情模式下允许点击上传
+        if (mode !== 'view') {
+            document.getElementById('file_input').click();
+        }
     }
 
     async function loadData() {
@@ -280,7 +297,6 @@
       }
 
       document.getElementById('tbody').innerHTML = list.map((i, index) => {
-          // 列表页只显示第一张图作为封面
           let firstImg = '';
           if(i.gongsizhaopian) {
               const imgs = i.gongsizhaopian.split(',');
@@ -291,7 +307,9 @@
               <td><input type="checkbox" value="${i.id}" name="ids"></td>
               <td>${(page - 1) * limit + index + 1}</td>
               <td>${i.gongsimingcheng}</td>
-              <td>${firstImg ? `<img src="${FILE_BASE_URL + firstImg}" class="thumb">` : '无'}</td>
+              <td>${firstImg 
+                  ? `<img src="${FILE_BASE_URL + firstImg}" class="thumb">` 
+                  : '<span style="color:#999;font-size:12px;">暂无数据</span>'}</td>
               <td>${i.gongsidizhi}</td>
               <td>${i.zixundianhua}</td>
               <td>
@@ -312,14 +330,12 @@
         const files = fileInput.files;
         if (!files || files.length === 0) return;
 
-        // 检查数量限制
         if (currentImageList.length + files.length > 9) {
             showMsg('最多只能上传9张图片', 'error');
             fileInput.value = '';
             return;
         }
 
-        // 循环上传每一张
         let successCount = 0;
         for (let i = 0; i < files.length; i++) {
             const formData = new FormData();
@@ -341,23 +357,24 @@
         if (successCount > 0) {
             updateHiddenInput();
             renderImages();
-            // showMsg(`成功上传 ${successCount} 张图片`, 'success'); // 已删除上传成功的提示
         } else {
             showMsg('上传失败', 'error');
         }
         fileInput.value = '';
     }
 
-    // 渲染图片列表
+    // 渲染图片列表 (核心逻辑修改)
     function renderImages() {
         const container = document.getElementById('imageListContainer');
         const trigger = document.getElementById('upload_trigger');
+        const icon = document.getElementById('up_icon');
+        const text = document.getElementById('up_text');
         
-        // 移除所有已存在的图片项 (保留最后的 trigger)
+        // 移除所有已存在的图片项
         const items = container.querySelectorAll('.image-item');
         items.forEach(el => el.remove());
 
-        // 遍历 currentImageList 创建 DOM
+        // 渲染图片
         currentImageList.forEach((fileName, index) => {
             const itemDiv = document.createElement('div');
             itemDiv.className = 'image-item';
@@ -372,15 +389,30 @@
                     </div>
                 </div>
             `;
-            // 插入到 trigger 之前
             container.insertBefore(itemDiv, trigger);
         });
 
-        // 超过9张或详情模式隐藏上传按钮
-        if (currentImageList.length >= 9 || mode === 'view') {
-            trigger.style.display = 'none';
+        // 状态控制逻辑
+        if (mode === 'view') {
+            if (currentImageList.length === 0) {
+                // 详情模式且无图片：显示“暂无数据”占位
+                trigger.style.display = 'flex';
+                icon.style.display = 'none';
+                text.innerText = '暂无数据';
+            } else {
+                // 详情模式有图片：隐藏上传按钮
+                trigger.style.display = 'none';
+            }
         } else {
-            trigger.style.display = 'flex';
+            // 编辑模式
+            if (currentImageList.length >= 9) {
+                trigger.style.display = 'none';
+            } else {
+                // 恢复正常上传样式
+                trigger.style.display = 'flex';
+                icon.style.display = 'block';
+                text.innerText = '点击上传';
+            }
         }
     }
 
@@ -416,7 +448,6 @@
       mode = m; 
       const modal = document.getElementById('modal');
       
-      // 清除错误样式
       document.querySelectorAll('.form-group').forEach(g => {
           g.classList.remove('has-error');
           const tip = g.querySelector('.error-tip');
@@ -427,10 +458,8 @@
       modal.classList.remove('view-mode');
 
       document.getElementById('modalFooter').style.display = 'block';
-      // 启用输入框
       document.querySelectorAll('.modal-body input, .modal-body textarea').forEach(el => el.disabled = false);
 
-      // 重置图片列表
       currentImageList = [];
       updateHiddenInput();
       renderImages();
@@ -445,7 +474,6 @@
         document.getElementById('modalFooter').style.display = 'none';
         document.querySelectorAll('.modal-body input, .modal-body textarea').forEach(el => el.disabled = true);
         modal.classList.add('view-mode');
-        // 重新渲染以隐藏上传按钮
         renderImages(); 
       }
     }
@@ -469,7 +497,6 @@
       document.getElementById('f_tel').value = i.zixundianhua;
       document.getElementById('f_desc').value = i.gongsijieshao;
       
-      // 回显图片
       if (i.gongsizhaopian) {
           currentImageList = i.gongsizhaopian.split(',');
       } else {
@@ -480,7 +507,6 @@
     }
 
     async function save() {
-      // 验证公司名称
       const nameInput = document.getElementById('f_name');
       const nameVal = nameInput.value.trim();
       
@@ -493,7 +519,7 @@
 
       const data = {
         gongsimingcheng: nameVal,
-        gongsizhaopian: document.getElementById('f_img').value, // 逗号拼接的字符串
+        gongsizhaopian: document.getElementById('f_img').value, 
         gongsidizhi: document.getElementById('f_addr').value,
         zixundianhua: document.getElementById('f_tel').value,
         gongsijieshao: document.getElementById('f_desc').value

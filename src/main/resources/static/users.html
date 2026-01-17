@@ -6,10 +6,10 @@
   <title>用户管理 - 装修公司管理系统</title>
   <script src="navbar.js"></script>
   <style>
+    /* ...原有样式保持不变... */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft YaHei", sans-serif; background: #f0f2f5; min-height: 100vh; }
     
-    /* 页面特定样式 */
     .breadcrumb { margin-bottom: 20px; display: flex; align-items: center; gap: 8px; font-size: 14px; color: #666; }
     .breadcrumb span { color: #1890ff; }
     .content-card { background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 24px; }
@@ -31,12 +31,15 @@
     .table-container { overflow-x: auto; margin-bottom: 20px; }
     table { width: 100%; border-collapse: collapse; font-size: 14px; }
     thead { background: #fafafa; }
-    th { padding: 12px 16px; text-align: left; font-weight: 600; color: #333; border-bottom: 1px solid #f0f0f0; white-space: nowrap; }
-    td { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; color: #666; }
+    
+    /* --- 修改点：表头和单元格居中 --- */
+    th { padding: 12px 16px; text-align: center; font-weight: 600; color: #333; border-bottom: 1px solid #f0f0f0; white-space: nowrap; }
+    td { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; color: #666; text-align: center; } /* 内容也居中 */
+    
     tbody tr { transition: background 0.3s; }
     tbody tr:hover { background: #fafafa; }
-    .avatar { width: 50px; height: 50px; border-radius: 4px; object-fit: cover; }
-    .action-btns { display: flex; gap: 8px; }
+    
+    .action-btns { display: flex; gap: 8px; justify-content: center; } /* 按钮组居中 */
     .btn-sm { padding: 4px 12px; font-size: 13px; }
     .btn-info { background: #1890ff; color: white; }
     
@@ -46,7 +49,6 @@
     .pagination button:disabled { opacity: 0.5; cursor: not-allowed; }
     .page-info { color: #666; font-size: 14px; }
     
-    /* 消息提示框 */
     .msg { padding: 12px 16px; border-radius: 4px; margin-bottom: 16px; font-size: 14px; display: none; }
     .msg.show { display: block; animation: fadeIn 0.3s; }
     .msg.error { background: #fff1f0; border: 1px solid #ffccc7; color: #cf1322; }
@@ -54,13 +56,14 @@
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
     
-    /* 弹窗样式 */
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 2000; align-items: center; justify-content: center; }
     .modal.show { display: flex; }
     .modal-content { background: white; border-radius: 8px; width: 90%; max-width: 700px; max-height: 90vh; overflow-y: auto; }
-    .modal-header { padding: 20px 30px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
-    .modal-header h3 { font-size: 18px; color: #111827; }
-    .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #6b7280; padding: 0; width: 30px; height: 30px; }
+    
+    .modal-header { padding: 20px 30px; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; position: relative; }
+    .modal-header h3 { font-size: 18px; color: #111827; flex: 1; text-align: left; margin: 0; }
+    .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #6b7280; padding: 0; width: 30px; height: 30px; position: absolute; right: 20px; }
+    
     .modal-body { padding: 30px; }
     .modal-form { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
     .modal-form .form-group { display: flex; flex-direction: column; gap: 6px; }
@@ -99,7 +102,7 @@
             <thead>
               <tr>
                 <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll()" /></th>
-                <th>索引</th><th>用户名</th><th>角色</th><th>手机</th><th>头像</th><th>操作</th>
+                <th>索引</th><th>用户名</th><th>角色</th><th>手机</th><th>操作</th>
               </tr>
             </thead>
             <tbody id="tbody"></tbody>
@@ -131,7 +134,6 @@
             </select>
           </div>
           <div class="form-group"><label>手机</label><input type="text" id="u_mobile" placeholder="请输入手机号码" /></div>
-          <div class="form-group full-width"><label>头像地址</label><input type="text" id="u_avatar" placeholder="请输入头像URL" /></div>
         </div>
       </div>
       <div class="modal-footer" id="userModalFooter">
@@ -145,19 +147,15 @@
     const base = '/springboot2z04j';
     let page = 1, limit = 10, totalPage = 1, selectedIds = new Set(), currentUser = null, userModalMode = 'add';
     
-    // 显示消息
     function setMsg(text, type) {
       const el = document.getElementById('msg');
       if (!text) { el.className = 'msg'; el.textContent = ''; return; }
       el.textContent = text; 
       el.className = `msg ${type} show`;
-      // 3秒后自动消失
       setTimeout(() => { el.className = 'msg'; }, 3000);
     }
     
-    // 加载用户数据（核心逻辑）
     async function loadUsers() {
-      // 移除原有的 setMsg('') 调用，减少闪烁，仅在报错时显示
       let token;
       try { token = localStorage.getItem('token'); } catch (e) {}
       if (!token) { 
@@ -169,8 +167,6 @@
       try {
         const username = document.getElementById('searchUsername').value.trim();
         const role = document.getElementById('searchRole').value.trim();
-        
-        // 构建URL
         let url = `${base}/users/page?page=${page}&limit=${limit}`;
         if (username) url += `&username=${encodeURIComponent(username)}`;
         if (role) url += `&role=${encodeURIComponent(role)}`;
@@ -194,22 +190,16 @@
         
         renderTable(list); 
         updatePagination();
-        
-        // --- 逻辑修改：移除了查询成功或未找到的弹窗提示 ---
-        // 仅在表格中显示"暂无数据"，不再干扰用户
-
       } catch (e) { 
           console.error(e);
           setMsg('网络错误，请稍后重试', 'error'); 
       }
     }
     
-    // 渲染表格
     function renderTable(list) {
       const tbody = document.getElementById('tbody');
       if (list.length === 0) { 
-          // 优化空状态显示
-          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#999;padding:20px;">暂无数据</td></tr>'; 
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#999;padding:20px;">暂无数据</td></tr>'; 
           return; 
       }
       tbody.innerHTML = list.map((row, index) => `
@@ -219,7 +209,6 @@
           <td>${row.username || ''}</td>
           <td>${row.role || ''}</td>
           <td>${row.mobile || ''}</td>
-          <td>${row.avatar ? `<img src="${row.avatar}" class="avatar" alt="头像" />` : '<div style="width:50px;height:50px;background:#f0f0f0;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#999;">无</div>'}</td>
           <td>
             <div class="action-btns">
               <button class="btn btn-sm btn-info" onclick="editUser(${row.id})">修改</button>
@@ -243,7 +232,6 @@
       document.getElementById('searchUsername').value = '';
       document.getElementById('searchRole').value = ''; 
       page = 1; selectedIds.clear(); loadUsers();
-      // --- 逻辑修改：移除了重置成功的弹窗 ---
     }
     
     function searchUsers() { page = 1; loadUsers(); }
@@ -275,33 +263,44 @@
     }
     
     function closeUserModal() { document.getElementById('userModal').classList.remove('show'); clearUserForm(); currentUser = null; }
+    
     function fillUserForm(u) {
       document.getElementById('u_username').value = u.username || '';
       const sel = document.getElementById('u_role_select'); 
       if (sel) { sel.value = u.role || ''; }
       document.getElementById('u_mobile').value = u.mobile || '';
-      document.getElementById('u_avatar').value = u.avatar || '';
     }
-    function clearUserForm() { ['u_username', 'u_password', 'u_mobile', 'u_avatar'].forEach(id => document.getElementById(id).value = ''); const sel = document.getElementById('u_role_select'); if (sel) sel.value=''; }
-    function setUserFormDisabled(disabled) { ['u_username', 'u_password', 'u_mobile', 'u_avatar'].forEach(id => document.getElementById(id).disabled = disabled); const sel = document.getElementById('u_role_select'); if (sel) sel.disabled = disabled; }
+    
+    function clearUserForm() { 
+        ['u_username', 'u_password', 'u_mobile'].forEach(id => document.getElementById(id).value = ''); 
+        const sel = document.getElementById('u_role_select'); if (sel) sel.value=''; 
+    }
+    
+    function setUserFormDisabled(disabled) { 
+        ['u_username', 'u_password', 'u_mobile'].forEach(id => document.getElementById(id).disabled = disabled); 
+        const sel = document.getElementById('u_role_select'); if (sel) sel.disabled = disabled; 
+    }
+    
     function addUser() { openUserModal('add'); }
     function editUser(id) { openUserModal('edit', id); }
     
     async function saveUser() {
       const username = document.getElementById('u_username').value.trim();
-      // 移除重复声明，role 已在下方由 select 元素获取
       const roleSel = document.getElementById('u_role_select'); 
       const role = roleSel ? (roleSel.value || '') : '';
       const mobile = document.getElementById('u_mobile').value.trim();
-      const avatar = document.getElementById('u_avatar').value.trim();
       const password = document.getElementById('u_password').value.trim();
+      
       if (!username || (userModalMode === 'add' && !password)) { setMsg('请填写用户名和密码！', 'error'); return; }
+      
       let token = ''; try { token = localStorage.getItem('token') || ''; } catch(e) {}
       if (!token) { setMsg('未登录或会话过期', 'error'); setTimeout(() => { window.location.href = 'index.html'; }, 1200); return; }
-      const payload = { username, role, mobile, avatar };
+      
+      const payload = { username, role, mobile };
       if (userModalMode === 'add') payload.password = password;
       let url = `${base}/users/save`;
       if (userModalMode === 'edit' && currentUser && currentUser.id != null) { url = `${base}/users/update`; payload.id = currentUser.id; }
+      
       try {
         const res = await fetch(url, { method: 'POST', headers: { 'Token': token, 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         const data = await res.json().catch(() => ({}));
