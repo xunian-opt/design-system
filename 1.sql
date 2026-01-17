@@ -1,17 +1,17 @@
 /*
  Navicat Premium Dump SQL
 
- Source Server         : localhost_3306
+ Source Server         : laiyx
  Source Server Type    : MySQL
- Source Server Version : 80401 (8.4.1)
+ Source Server Version : 90500 (9.5.0)
  Source Host           : localhost:3306
  Source Schema         : springboot2z04j
 
  Target Server Type    : MySQL
- Target Server Version : 80401 (8.4.1)
+ Target Server Version : 90500 (9.5.0)
  File Encoding         : 65001
 
- Date: 16/01/2026 16:40:29
+ Date: 17/01/2026 19:22:00
 */
 
 SET NAMES utf8mb4;
@@ -31,7 +31,7 @@ CREATE TABLE `aboutus`  (
   `picture3` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
   `addtime` datetime NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of aboutus
@@ -51,7 +51,7 @@ CREATE TABLE `address`  (
   `addtime` datetime NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_address_user`(`userid` ASC) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of address
@@ -75,7 +75,7 @@ CREATE TABLE `cart`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_cart_user`(`userid` ASC) USING BTREE,
   INDEX `idx_cart_good`(`goodid` ASC) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of cart
@@ -96,7 +96,7 @@ CREATE TABLE `chat`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_chat_user`(`userid` ASC) USING BTREE,
   INDEX `idx_chat_admin`(`adminid` ASC) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of chat
@@ -118,7 +118,7 @@ CREATE TABLE `discusszhuangxiushangpin`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_discuss_ref`(`refid` ASC) USING BTREE,
   INDEX `idx_discuss_user`(`userid` ASC) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of discusszhuangxiushangpin
@@ -138,7 +138,7 @@ CREATE TABLE `gongsixinxi`  (
   `gongsijieshao` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL,
   `addtime` datetime NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of gongsixinxi
@@ -150,7 +150,39 @@ INSERT INTO `gongsixinxi` VALUES (1700001001004, '青禾艺筑', '', '杭州市�
 INSERT INTO `gongsixinxi` VALUES (1700001001005, '北冥装饰工程', '', '深圳市南山区科技园', '办公空间规划, 展厅搭建, 商业照明', '0755-88001234', '专注企业空间形象升级，提供从规划到施工的一体化服务。', '2025-12-01 10:20:00');
 INSERT INTO `gongsixinxi` VALUES (1700001001006, '晴川家居设计', '', '成都市高新区环球中心', '儿童房设计, 环保材料整装, 智能家居', '028-66007788', '强调环保与安全，适配多品牌智能家居生态。', '2025-12-01 10:25:00');
 INSERT INTO `gongsixinxi` VALUES (1700001001007, '云庐建筑装饰', '', '重庆市渝中区解放碑', '景观小品, LOFT风, 工业风改造', '023-66998877', '擅长工业风与loft空间，提升空间层次与采光。', '2025-12-01 10:30:00');
-INSERT INTO `gongsixinxi` VALUES (1700001001008, '拾光软装工作室', '', '南京市江宁区秣周东路', '软装配色, 家具选型, 窗帘地毯定制', '025-88116600', '以软装为核心，提供一站式搭配与现场落地。', '2025-12-01 10:35:00');
+INSERT INTO `gongsixinxi` VALUES (1700001001008, '拾光软装工作室', '1768628643314.jpg', '南京市江宁区秣周东路', '软装配色, 家具选型, 窗帘地毯定制', '025-88116600', '以软装为核心，提供一站式搭配与现场落地。', '2025-12-01 10:35:00');
+
+-- ----------------------------
+-- Table structure for menu
+-- ----------------------------
+DROP TABLE IF EXISTS `menu`;
+CREATE TABLE `menu`  (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `parent_id` bigint NULL DEFAULT 0 COMMENT '父菜单ID，一级菜单为0',
+  `title` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '菜单名称',
+  `path` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '路由地址',
+  `icon` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '图标',
+  `order_num` int NULL DEFAULT 0 COMMENT '排序',
+  `perms` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '权限标识',
+  `type` int NULL DEFAULT 1 COMMENT '类型 0:目录 1:菜单 2:按钮',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 35 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '菜单权限表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of menu
+-- ----------------------------
+INSERT INTO `menu` VALUES (1, 0, '系统首页', '/home', 'el-icon-s-home', 1, NULL, 1);
+INSERT INTO `menu` VALUES (3, 0, '系统管理', 'sys-sub', 'el-icon-setting', 3, NULL, 1);
+INSERT INTO `menu` VALUES (4, 0, '个人中心', '/profile', 'el-icon-user-solid', 4, NULL, 1);
+INSERT INTO `menu` VALUES (21, 0, '设计师管理', '/employees', 'el-icon-user', 2, NULL, 1);
+INSERT INTO `menu` VALUES (22, 0, '商品分类', '/category', 'el-icon-menu', 3, NULL, 1);
+INSERT INTO `menu` VALUES (23, 0, '装修商品', '/product', 'el-icon-goods', 3, NULL, 1);
+INSERT INTO `menu` VALUES (24, 0, '装修作品', '/work', 'el-icon-picture-outline', 4, NULL, 1);
+INSERT INTO `menu` VALUES (25, 0, '订单管理', '/order', 'el-icon-document', 5, NULL, 1);
+INSERT INTO `menu` VALUES (31, 3, '用户管理', '/sys/users', '', 1, NULL, 1);
+INSERT INTO `menu` VALUES (32, 3, '角色管理', '/sys/roles', '', 2, NULL, 1);
+INSERT INTO `menu` VALUES (33, 3, '菜单管理', '/sys/menus', '', 3, NULL, 1);
+INSERT INTO `menu` VALUES (34, 3, '轮播图管理', '/sys/system', '', 4, NULL, 1);
 
 -- ----------------------------
 -- Table structure for news
@@ -164,7 +196,7 @@ CREATE TABLE `news`  (
   `content` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL,
   `addtime` datetime NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of news
@@ -199,7 +231,7 @@ CREATE TABLE `orders`  (
   UNIQUE INDEX `orderid`(`orderid` ASC) USING BTREE,
   INDEX `idx_orders_user`(`userid` ASC) USING BTREE,
   INDEX `idx_orders_good`(`goodid` ASC) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of orders
@@ -230,6 +262,24 @@ INSERT INTO `role` VALUES (1768533393637, '管理员', '00', '2026-01-16 11:16:3
 INSERT INTO `role` VALUES (1768534597497, '设计师', '01', '2026-01-16 11:36:36');
 
 -- ----------------------------
+-- Table structure for role_menu
+-- ----------------------------
+DROP TABLE IF EXISTS `role_menu`;
+CREATE TABLE `role_menu`  (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `role_id` bigint NOT NULL COMMENT '角色ID',
+  `menu_id` bigint NOT NULL COMMENT '菜单ID',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '角色菜单关联表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of role_menu
+-- ----------------------------
+INSERT INTO `role_menu` VALUES (1, 1768534597497, 1);
+INSERT INTO `role_menu` VALUES (2, 1768534597497, 23);
+INSERT INTO `role_menu` VALUES (3, 1768534597497, 24);
+
+-- ----------------------------
 -- Table structure for shangpinfenlei
 -- ----------------------------
 DROP TABLE IF EXISTS `shangpinfenlei`;
@@ -239,7 +289,7 @@ CREATE TABLE `shangpinfenlei`  (
   `addtime` datetime NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `shangpinfenlei`(`shangpinfenlei` ASC) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of shangpinfenlei
@@ -273,7 +323,7 @@ CREATE TABLE `storeup`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_storeup_user`(`userid` ASC) USING BTREE,
   INDEX `idx_storeup_ref`(`refid` ASC) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of storeup
@@ -296,14 +346,14 @@ CREATE TABLE `token`  (
   UNIQUE INDEX `token`(`token` ASC) USING BTREE,
   INDEX `idx_token_user`(`userid` ASC) USING BTREE,
   INDEX `idx_token_token`(`token` ASC) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of token
 -- ----------------------------
-INSERT INTO `token` VALUES (1768374567385, 1700000000001, 'admin', 'users', '管理员', 'di1r6kzw3jrtiahfcnmz5vh36abz7tsv', '2026-01-16 17:32:26', '2026-01-14 15:09:27');
+INSERT INTO `token` VALUES (1768374567385, 1700000000001, 'admin', 'users', '管理员', '8kadm9l5l7rdxz19ffgp0abaj7dshija', '2026-01-17 20:12:09', '2026-01-14 15:09:27');
 INSERT INTO `token` VALUES (1768532083896, 1768442196774, 'ceshi', 'users', '管理员', '49h0mnilujsgfifivv6vsx6nx0q1vwpc', '2026-01-16 11:54:43', '2026-01-16 10:54:43');
-INSERT INTO `token` VALUES (1768534626673, 1768442196774, 'xunian', 'users', '设计师', 'nz78kimv8u33mej4fmixjacyln7z5v0o', '2026-01-16 12:37:06', '2026-01-16 11:37:06');
+INSERT INTO `token` VALUES (1768534626673, 1768442196774, 'xunian', 'users', '设计师', 'o98kagjj4j5bkbbe4wqk4p88jtlfh13t', '2026-01-17 20:06:57', '2026-01-16 11:37:06');
 
 -- ----------------------------
 -- Table structure for users
@@ -319,7 +369,7 @@ CREATE TABLE `users`  (
   `addtime` datetime NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `username`(`username` ASC) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of users
@@ -343,7 +393,7 @@ CREATE TABLE `yonghu`  (
   `addtime` datetime NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_yonghu_yonghuming`(`yonghuming` ASC) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of yonghu
@@ -366,15 +416,15 @@ CREATE TABLE `yuangongxinxi`  (
   `addtime` datetime NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `gonghao`(`gonghao` ASC) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of yuangongxinxi
 -- ----------------------------
-INSERT INTO `yuangongxinxi` VALUES (1700001001001, 'EMP001', '张三', '男', '', '项目经理', '13800138001', '110101199001011234', '家装项目A', '2026-01-14 17:02:46');
-INSERT INTO `yuangongxinxi` VALUES (1700001001002, 'EMP002', '李四', '女', '', '设计师', '13800138002', '110101199102021234', '工装项目B', '2026-01-14 17:02:46');
-INSERT INTO `yuangongxinxi` VALUES (1700001001003, 'EMP003', '王五', '男', '', '施工主管', '13800138003', '110101199303031234', '别墅装修C', '2026-01-14 17:02:46');
-INSERT INTO `yuangongxinxi` VALUES (1700001001004, 'EMP004', '赵六', '女', '', '预算员', '13800138004', '110101199404041234', '预算审核D', '2026-01-14 17:02:46');
+INSERT INTO `yuangongxinxi` VALUES (1700001001001, 'EMP001', '张三', '男', '1768624738463.jpg', '项目经理', '13800138001', '110101199001011234', '家装项目A', '2026-01-14 17:02:46');
+INSERT INTO `yuangongxinxi` VALUES (1700001001002, 'EMP002', '李四', '女', '1768632435816.jpg', '设计师', '13800138002', '110101199102021234', '工装项目B', '2026-01-14 17:02:46');
+INSERT INTO `yuangongxinxi` VALUES (1700001001003, 'EMP003', '王五', '男', '1768632443970.jpg', '施工主管', '13800138003', '110101199303031234', '别墅装修C', '2026-01-14 17:02:46');
+INSERT INTO `yuangongxinxi` VALUES (1700001001004, 'EMP004', '赵六', '女', '1768632453904.jpg', '预算员', '13800138004', '110101199404041234', '预算审核D', '2026-01-14 17:02:46');
 INSERT INTO `yuangongxinxi` VALUES (1700001001005, 'EMP005', '钱七', '男', '', '材料采购', '13800138005', '110101199505051234', '材料供应E', '2026-01-14 17:02:46');
 INSERT INTO `yuangongxinxi` VALUES (1700001001006, 'EMP006', '孙八', '女', '', '客服专员', '13800138006', '110101199606061234', '售后维护F', '2026-01-14 17:02:46');
 INSERT INTO `yuangongxinxi` VALUES (1700001001007, 'EMP007', '周九', '男', '', '平面设计', '13800138007', '110101199707071234', '效果图设计G', '2026-01-14 17:02:46');
@@ -401,12 +451,12 @@ CREATE TABLE `zhuangxiushangpin`  (
   `addtime` datetime NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_zxsp_fenlei`(`shangpinfenlei` ASC) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of zhuangxiushangpin
 -- ----------------------------
-INSERT INTO `zhuangxiushangpin` VALUES (1768700000001, '高级实木地板', '地板材料', '', '1200x200x18mm', '木之源', '满2000减200', 2, 5, '高密度实木，耐磨耐压，环保等级E0。', NULL, 0, 399.00, '2026-01-15 14:16:23');
+INSERT INTO `zhuangxiushangpin` VALUES (1768700000001, '高级实木地板', '地板材料', '1768625878680.jpg', '1200x200x18mm', '木之源', '满2000减200', 2, 5, '高密度实木，耐磨耐压，环保等级E0。', NULL, 0, 399.00, '2026-01-15 14:16:23');
 INSERT INTO `zhuangxiushangpin` VALUES (1768700000002, '耐污内墙涂料', '墙面涂料', '', '20L', '彩涂坊', '买二送一', 3, 6, '抗霉耐污，低气味快干，适合室内墙面。', NULL, 0, 189.90, '2026-01-15 14:16:23');
 INSERT INTO `zhuangxiushangpin` VALUES (1768700000003, '现代客厅吊灯', '灯具照明', '', '120W LED', '光语', '新品九折', 1, 3, '无极调光，暖白冷白切换，低蓝光护眼。', NULL, 0, 599.00, '2026-01-15 14:16:23');
 INSERT INTO `zhuangxiushangpin` VALUES (1768700000004, '不锈钢淋浴花洒', '厨卫洁具', '', '套装', '洁瑞', '满500减50', 2, 4, '304不锈钢主体，三档出水，一键除垢。', NULL, 0, 329.00, '2026-01-15 14:16:23');
@@ -432,7 +482,7 @@ CREATE TABLE `zhuangxiuzuopin`  (
   `faburiqi` datetime NULL DEFAULT NULL,
   `addtime` datetime NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of zhuangxiuzuopin
@@ -441,6 +491,6 @@ INSERT INTO `zhuangxiuzuopin` VALUES (1684652001001, '现代简约·阳光海岸
 INSERT INTO `zhuangxiuzuopin` VALUES (1684652001002, '欧式奢华·皇家庭院别墅', '欧式风格', '', '汲取古典欧式建筑元素，运用大理石罗马柱与水晶吊灯，展现尊贵典雅的生活品质。', '<p>挑高客厅设计，搭配精致的石膏线条；餐厅设置长桌，适合家庭聚会...</p>', '赵六', '2023-06-15 00:00:00', '2023-06-15 14:30:00');
 INSERT INTO `zhuangxiuzuopin` VALUES (1684652001003, '新中式·雅致书香门第', '新中式', '', '将传统中式元素与现代材质巧妙兼柔，删繁就简，绘出富有禅意的东方美学。', '<p>书房采用原木色书柜，搭配博古架；客厅背景墙采用山水水墨画硬包...</p>', '王五', '2023-07-08 00:00:00', '2023-07-08 09:15:00');
 INSERT INTO `zhuangxiuzuopin` VALUES (1684652001004, '北欧风情·清新小户型', '北欧风格', '', '以浅色调为主，搭配原木家具与绿植点缀，营造自然、舒适、年轻化的生活氛围。', '<p>开放式厨房设计增加互动性；阳台改造为休闲区，放置懒人沙发...</p>', '李四', '2023-08-22 00:00:00', '2023-08-22 16:45:00');
-INSERT INTO `zhuangxiuzuopin` VALUES (1684652001005, '工业风·LOFT创意空间', '工业风格', '', '裸露的红砖墙与水泥顶面，搭配黑色金属铁艺，展现个性张扬的艺术气息。', '<p>二层设置为卧室私密空间，一层为开放式办公与娱乐区域，楼梯下方做储物设计...</p>', '张三', '2023-09-10 00:00:00', '2023-09-10 11:20:00');
+INSERT INTO `zhuangxiuzuopin` VALUES (1684652001005, '工业风·LOFT创意空间', '工业风格', '1768626170542.jpg', '裸露的红砖墙与水泥顶面，搭配黑色金属铁艺，展现个性张扬的艺术气息。', '<p>二层设置为卧室私密空间，一层为开放式办公与娱乐区域，楼梯下方做储物设计...</p>', '张三', '2023-09-10 00:00:00', '2023-09-10 11:20:00');
 
 SET FOREIGN_KEY_CHECKS = 1;
