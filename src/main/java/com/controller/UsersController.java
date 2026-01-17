@@ -4,7 +4,9 @@ package com.controller;
 
 import com.annotation.IgnoreAuth;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.entity.MenuEntity;
 import com.entity.UsersEntity;
+import com.service.MenuService;
 import com.service.TokenService;
 import com.service.UsersService;
 import com.service.RoleService;
@@ -16,9 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 登录相关
@@ -32,6 +32,9 @@ public class UsersController {
 
     @Autowired
     private TokenService tokenService;
+
+    @Autowired
+    private MenuService menuService; // 注入菜单服务
     @Autowired
     private RoleService roleService;
 
@@ -121,13 +124,37 @@ public class UsersController {
     }
 
     /**
-     * 获取用户的session用户信息
+     * 获取用户的session用户信息，包含菜单权限
      */
     @RequestMapping("/session")
-    public R getCurrUser(HttpServletRequest request) {
-        Long id = (Long) request.getSession().getAttribute("userId");
+    public R getCurrUser(HttpServletRequest request){
+        Long id = (Long)request.getSession().getAttribute("userId");
+        // 如果session没有，尝试从token解析（原有逻辑保持）
+
         UsersEntity user = userService.selectById(id);
-        return R.ok().put("data", user);
+
+        // 获取角色信息
+        String roleName = user.getRole();
+
+        // 动态获取菜单树
+        List<MenuEntity> menuList;
+        if ("管理员".equals(roleName)) {
+            // 管理员拥有全部菜单
+            menuList = menuService.getTreeMenu();
+        } else {
+            // 普通用户根据角色查菜单
+            // 假设 UsersEntity 存的是角色名，需先查角色ID
+            RoleEntity role = roleService.selectOne(new EntityWrapper<RoleEntity>().eq("name", roleName));
+            if (role != null) {
+                menuList = menuService.getTreeMenuByRoleId(role.getId());
+            } else {
+                menuList = new ArrayList<>();
+            }
+        }
+
+        return R.ok()
+                .put("data", user)
+                .put("menus", menuList); // 将菜单树放入返回结果
     }
 
     /**

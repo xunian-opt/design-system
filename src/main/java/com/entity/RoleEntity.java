@@ -6,14 +6,19 @@ import com.baomidou.mybatisplus.enums.IdType;
 import java.io.Serializable;
 import java.util.Date;
 
-@TableName("role")
+// 修改点：给 role 加上反引号 `role`，防止与 MySQL 关键字冲突
+@TableName("`role`")
 public class RoleEntity implements Serializable {
     @TableId(value = "id", type = IdType.INPUT)
     private Long id;
+
     private String name;
+
     private String code;
+
     private Date addtime;
 
+    // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getName() { return name; }

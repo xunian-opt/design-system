@@ -52,10 +52,6 @@ public class AboutusController {
     @Autowired
     private AboutusService aboutusService;
 
-
-    
-
-
     /**
      * 后端列表
      */

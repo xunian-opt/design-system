@@ -1,5 +1,5 @@
 /**
- * navbar.js - 通用导航栏组件 (防错修复版)
+ * navbar.js - 通用导航栏组件 (顺序修正版)
  */
 
 class Navbar {
@@ -15,6 +15,22 @@ class Navbar {
     getMenuData() {
         return [
             { type: 'item', id: 'home.html', icon: '🏠', text: '系统首页' },
+            
+            /* --- 修改：将【业务管理】放在上面 --- */
+            {
+                type: 'group',
+                title: '业务管理',
+                items: [
+                    { type: 'item', id: 'employees.html', icon: '👷', text: '设计师信息管理' },
+                    { type: 'item', id: 'gongsixinxi.html', icon: '🏢', text: '公司信息管理' },
+                    { type: 'item', id: 'category.html', icon: '📦', text: '商品分类管理' },
+                    { type: 'item', id: 'product.html', icon: '🛍️', text: '装修商品管理' },
+                    { type: 'item', id: 'work.html', icon: '🎨', text: '装修作品管理' },
+                    { type: 'item', id: 'order.html', icon: '📝', text: '订单管理' }
+                ]
+            },
+
+            /* --- 修改：将【基础功能】放在下面 --- */
             { 
                 type: 'group', 
                 title: '基础功能', 
@@ -30,18 +46,6 @@ class Navbar {
                             { id: 'roles.html', text: '角色管理' }
                         ]
                     }
-                ]
-            },
-            {
-                type: 'group',
-                title: '业务管理',
-                items: [
-                    { type: 'item', id: 'employees.html', icon: '👷', text: '设计师信息管理' },
-                    { type: 'item', id: 'gongsixinxi.html', icon: '🏢', text: '公司信息管理' },
-                    { type: 'item', id: 'category.html', icon: '📦', text: '商品分类管理' },
-                    { type: 'item', id: 'product.html', icon: '🛍️', text: '装修商品管理' },
-                    { type: 'item', id: 'work.html', icon: '🎨', text: '装修作品管理' },
-                    { type: 'item', id: 'order.html', icon: '📝', text: '订单管理' }
                 ]
             }
         ];
@@ -128,7 +132,6 @@ class Navbar {
         let container = document.querySelector('.main-container');
         
         if (!container) {
-            // 如果还没找到 container，尝试查找 content 并自动修复结构
             const content = document.querySelector('.content');
             if (content) {
                 container = document.createElement('div');
@@ -136,7 +139,6 @@ class Navbar {
                 content.parentNode.insertBefore(container, content);
                 container.appendChild(content);
             } else {
-                // 如果连 content 都没有，说明页面可能还没加载完，或者结构严重错误
                 console.error("❌ Navbar Error: 无法找到 .main-container 或 .content。");
                 return;
             }
@@ -189,19 +191,15 @@ class Navbar {
     }
 
     init() {
-        // 定义渲染函数
         const runRender = () => {
             this.injectStyles();
             this.renderTopBar();
             this.renderSidebar();
         };
 
-        // 核心修复逻辑：检查 document.body 是否已经存在
         if (document.body) {
-            // 如果 body 已经存在，直接运行
             runRender();
         } else {
-            // 如果 body 还是 null，则添加监听器等待加载完成
             document.addEventListener('DOMContentLoaded', runRender);
         }
     }

@@ -18,10 +18,33 @@ public class RoleController {
     @Autowired
     private RoleService roleService;
 
+//    @RequestMapping("/page")
+//    public R page(@RequestParam Map<String, Object> params, RoleEntity role) {
+//        EntityWrapper<RoleEntity> ew = new EntityWrapper<RoleEntity>();
+//        PageUtils page = roleService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.allLike(ew, role), params), params));
+//        return R.ok().put("data", page);
+//    }
+
+    /**
+     * 列表 (修改版：简化查询逻辑，便于调试)
+     */
     @RequestMapping("/page")
     public R page(@RequestParam Map<String, Object> params, RoleEntity role) {
+        // 1. 手动构建查询条件，不使用 MPUtil.allLike，避免自动注入错误的 WHERE 条件
         EntityWrapper<RoleEntity> ew = new EntityWrapper<RoleEntity>();
-        PageUtils page = roleService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.allLike(ew, role), params), params));
+
+        // 2. 如果前端传了 name 参数，才进行模糊查询
+        String name = (String)params.get("name");
+        if(name != null && !name.isEmpty()){
+            ew.like("name", name);
+        }
+
+        // 3. 直接调用 service 查询
+        PageUtils page = roleService.queryPage(params, ew);
+
+        // 4. 打印日志帮助调试 (查看控制台输出)
+        System.out.println("角色查询结果数量: " + page.getTotalCount());
+
         return R.ok().put("data", page);
     }
 

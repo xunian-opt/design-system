@@ -97,5 +97,9 @@ public class PageUtils implements Serializable {
 	public void setTotal(long total) {
 		this.total = total;
 	}
-	
+
+    public String getTotalCount() {
+
+        return "";
+    }
 }
