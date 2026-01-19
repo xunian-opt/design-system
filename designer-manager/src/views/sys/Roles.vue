@@ -1,27 +1,27 @@
 <template>
   <div class="app-container">
-    <el-card class="box-card">
+    <el-card class="table-card" shadow="never">
       <div class="toolbar">
-        <el-button type="primary" icon="el-icon-plus" @click="handleAdd">新增角色</el-button>
+        <el-button type="primary" icon="el-icon-plus" size="small" @click="handleAdd">新增角色</el-button>
       </div>
 
-      <el-table v-loading="loading" :data="tableData" border style="width: 100%">
+      <el-table v-loading="loading" :data="tableData" border style="width: 100%" size="medium">
         <el-table-column type="index" label="索引" width="80" align="center">
            <template slot-scope="scope">{{ (pagination.page - 1) * pagination.limit + scope.$index + 1 }}</template>
         </el-table-column>
         <el-table-column prop="name" label="角色名称" align="center"></el-table-column>
         <el-table-column prop="code" label="角色编码" align="center"></el-table-column>
-        <el-table-column label="操作" width="300" align="center">
+        <el-table-column label="操作" width="300" align="center" fixed="right">
           <template slot-scope="scope">
-            <el-button size="mini" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row)">修改</el-button>
-            <el-button size="mini" type="success" icon="el-icon-circle-check" @click="handleAuth(scope.row)">菜单权限</el-button>
-            <el-button size="mini" type="danger" icon="el-icon-delete" @click="handleDelete(scope.row.id)">删除</el-button>
+            <el-button size="mini" type="text" icon="el-icon-edit" class="blue-text" @click="handleEdit(scope.row)">修改</el-button>
+            <el-button size="mini" type="text" icon="el-icon-circle-check" class="blue-text" @click="handleAuth(scope.row)">菜单权限</el-button>
+            <el-button size="mini" type="text" icon="el-icon-delete" class="red-text" @click="handleDelete(scope.row.id)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
       
       <el-pagination
-        style="margin-top: 20px; text-align: center;"
+        style="margin-top: 20px; text-align: right;"
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
         :current-page="pagination.page"
@@ -32,8 +32,8 @@
       </el-pagination>
     </el-card>
 
-    <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="500px">
-      <el-form :model="form" :rules="rules" ref="form" label-width="100px">
+    <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="500px" :close-on-click-modal="false">
+      <el-form :model="form" :rules="rules" ref="form" label-width="100px" size="small">
         <el-form-item label="角色名称" prop="name">
           <el-input v-model="form.name" placeholder="请输入角色名称"></el-input>
         </el-form-item>
@@ -42,13 +42,13 @@
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button @click="dialogVisible = false" size="small">取 消</el-button>
+        <el-button type="primary" @click="submitForm" size="small">确 定</el-button>
       </span>
     </el-dialog>
 
-    <el-dialog title="分配菜单权限" :visible.sync="authOpen" width="500px">
-      <el-form label-width="80px">
+    <el-dialog title="分配菜单权限" :visible.sync="authOpen" width="500px" :close-on-click-modal="false">
+      <el-form label-width="80px" size="small">
         <el-form-item label="角色名称">
           <el-input v-model="authForm.name" disabled />
         </el-form-item>
@@ -68,8 +68,8 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitAuth">确 定</el-button>
-        <el-button @click="authOpen = false">取 消</el-button>
+        <el-button @click="authOpen = false" size="small">取 消</el-button>
+        <el-button type="primary" @click="submitAuth" size="small">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -87,8 +87,6 @@ export default {
       tableData: [],
       total: 0,
       pagination: { page: 1, limit: 10 },
-      
-      // 增删改数据
       dialogVisible: false,
       mode: 'add',
       form: { id: '', name: '', code: '' },
@@ -96,8 +94,6 @@ export default {
         name: [{ required: true, message: '必填', trigger: 'blur' }],
         code: [{ required: true, message: '必填', trigger: 'blur' }]
       },
-
-      // 权限分配数据
       authOpen: false,
       menuExpand: false,
       menuNodeAll: false,
@@ -138,22 +134,17 @@ export default {
         this.loading = false
       })
     },
-
     handleAdd() {
       this.mode = 'add'
       this.form = { name: '', code: '' }
       this.dialogVisible = true
-      this.$nextTick(() => {
-        this.$refs.form && this.$refs.form.clearValidate()
-      })
+      this.$nextTick(() => { this.$refs.form && this.$refs.form.clearValidate() })
     },
     handleEdit(row) {
       this.mode = 'edit'
       this.form = { ...row } 
       this.dialogVisible = true
-      this.$nextTick(() => {
-        this.$refs.form && this.$refs.form.clearValidate()
-      })
+      this.$nextTick(() => { this.$refs.form && this.$refs.form.clearValidate() })
     },
     submitForm() {
       this.$refs.form.validate(valid => {
@@ -183,8 +174,6 @@ export default {
         })
       })
     },
-
-    // --- 权限分配方法 (关键修改点) ---
     handleAuth(row) {
       if (row.code === 'admin') {
         this.$message.warning('管理员拥有所有权限，无需分配');
@@ -192,16 +181,14 @@ export default {
       }
       this.authForm = { id: row.id, name: row.name };
       this.authOpen = true;
-      this.menuExpand = false; // 默认不展开
+      this.menuExpand = false;
       this.menuNodeAll = false;
-      
       this.menuOptions = JSON.parse(JSON.stringify(mockMenuData)); 
       
       request.get(`/role/menus/${row.id}`).then(res => {
         const checkedKeys = (res.code === 0 && res.data) ? res.data : [];
         this.$nextTick(() => {
             this.$refs.menu.setCheckedKeys(checkedKeys);
-            // 修改点：调用已有的 handleCheckedTreeExpand 方法来折叠所有节点
             this.handleCheckedTreeExpand(false); 
         });
       }).catch(() => {
@@ -211,20 +198,15 @@ export default {
         });
       })
     },
-
-    // 控制树的展开/折叠
     handleCheckedTreeExpand(value) {
       let treeList = this.menuOptions;
       for (let i = 0; i < treeList.length; i++) {
-        // 通过 id 找到对应节点并设置 expanded 属性
         this.$refs.menu.store.nodesMap[treeList[i].id].expanded = value;
       }
     },
-    // 控制全选/全不选
     handleCheckedTreeNodeAll(value) {
       this.$refs.menu.setCheckedNodes(value ? this.menuOptions : []);
     },
-
     submitAuth() {
       const roleId = this.authForm.id;
       const menuIds = this.$refs.menu.getCheckedKeys();
@@ -243,7 +225,6 @@ export default {
         }
       })
     },
-
     handleSizeChange(val) {
       this.pagination.limit = val;
       this.fetchData();
@@ -257,7 +238,22 @@ export default {
 </script>
 
 <style scoped>
-.toolbar { margin-bottom: 20px; }
+.app-container {
+  padding: 10px;
+  background-color: #f0f2f5;
+  min-height: calc(100vh - 84px);
+}
+.table-card {
+  border-radius: 4px;
+  border: none;
+  min-height: 500px;
+}
+.toolbar { margin-bottom: 15px; }
+.blue-text { color: #1890ff; }
+.red-text { color: #ff4d4f; }
+
+::v-deep .el-card__body { padding: 15px; }
+
 .tree-border {
   margin-top: 5px;
   border: 1px solid #e5e6e7;

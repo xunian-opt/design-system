@@ -31,7 +31,6 @@
             <span slot="title">{{ menu.title }}</span>
           </el-menu-item>
         </template>
-
       </el-menu>
     </el-aside>
 
@@ -102,8 +101,6 @@ export default {
       role: localStorage.getItem('role') || '用户',
       visitedViews: [],
       menuList: [],
-      
-      // 修改点 3: 右键菜单相关状态
       visible: false,
       top: 0,
       left: 0,
@@ -114,7 +111,6 @@ export default {
     $route() {
       this.addTags()
     },
-    // 修改点 4: 监听 visible 变化，添加全局点击关闭事件
     visible(value) {
       if (value) {
         document.body.addEventListener('click', this.closeMenu)
@@ -181,16 +177,12 @@ export default {
         }
       }
     },
-
-    // --- 修改点 5: 右键菜单相关方法 ---
-    
-    // 打开右键菜单
     openMenu(tag, e) {
       const menuMinWidth = 105
-      const offsetLeft = this.$el.getBoundingClientRect().left // container left
-      const offsetWidth = this.$el.offsetWidth // container width
-      const maxLeft = offsetWidth - menuMinWidth // left boundary
-      const left = e.clientX - offsetLeft + 15 // 15: margin right
+      const offsetLeft = this.$el.getBoundingClientRect().left 
+      const offsetWidth = this.$el.offsetWidth 
+      const maxLeft = offsetWidth - menuMinWidth 
+      const left = e.clientX - offsetLeft + 15 
 
       if (left > maxLeft) {
         this.left = maxLeft
@@ -202,31 +194,21 @@ export default {
       this.visible = true
       this.selectedTag = tag
     },
-    // 关闭菜单
     closeMenu() {
       this.visible = false
     },
-    // 关闭其他标签
-        closeOthersTags() {
-          // 1. 先跳转（只有当路由不一致时才跳转）
-          // 这里的 this.$route.path 是当前浏览器地址栏的路径
-          // this.selectedTag.path 是你右键点击的那个标签的路径
-          if (this.$route.path !== this.selectedTag.path) {
-            this.$router.push(this.selectedTag).catch(err => {}) // 加上 catch 以防万一
-          }
-    
-          // 2. 过滤数组，只保留 选中项 和 首页
-          this.visitedViews = this.visitedViews.filter(tag => {
-            return tag.path === this.selectedTag.path || tag.path === '/home'
-          })
-        },
-    // 关闭所有标签
+    closeOthersTags() {
+      if (this.$route.path !== this.selectedTag.path) {
+        this.$router.push(this.selectedTag).catch(err => {})
+      }
+      this.visitedViews = this.visitedViews.filter(tag => {
+        return tag.path === this.selectedTag.path || tag.path === '/home'
+      })
+    },
     closeAllTags() {
-      // 保留首页，其余删除
       this.visitedViews = this.visitedViews.filter(tag => tag.path === '/home')
       this.$router.push('/')
     },
-
     handleCommand(command) {
       if (command === 'logout') {
         this.logout();
@@ -305,6 +287,7 @@ export default {
   font-size: 14px;
 }
 
+/* --- 样式优化：标签栏 --- */
 .tags-view-container {
   height: 34px; 
   width: 100%;
@@ -313,6 +296,7 @@ export default {
   display: flex;
   align-items: center;
   padding: 0 15px;
+  /* 关键：去掉下边距，减小与内容的距离 */
   margin-top: 5px; 
   margin-bottom: 0;
 }
@@ -363,18 +347,19 @@ export default {
   color: #fff;
 }
 
+/* --- 样式优化：主内容区域 --- */
 .el-main {
   background-color: #f0f2f5;
-  padding: 10px 20px 20px 20px; 
+  /* 关键：顶部内边距减小到 5px，紧贴标签栏 */
+  padding: 5px 10px 20px 10px; 
   overflow-y: auto;
 }
 
-/* --- 修改点 6: 右键菜单样式 --- */
 .contextmenu {
   margin: 0;
   background: #fff;
   z-index: 3000;
-  position: fixed; /* 使用 fixed 定位，防止被遮挡 */
+  position: fixed;
   list-style-type: none;
   padding: 5px 0;
   border-radius: 4px;
@@ -383,20 +368,18 @@ export default {
   color: #333;
   box-shadow: 2px 2px 3px 0 rgba(0, 0, 0, .3);
 }
-
 .contextmenu li {
   margin: 0;
   padding: 7px 16px;
   cursor: pointer;
 }
-
 .contextmenu li:hover {
   background: #eee;
 }
 </style>
 
 <style>
-/* 覆盖 Element UI 表格表头样式 */
+/* 全局表格表头样式 */
 .el-table th {
   background-color: #f5f7fa !important;
   color: #606266;

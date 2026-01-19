@@ -65,6 +65,13 @@ const routes = [
 	    component: () => import('@/views/business/Category.vue'),
 	    meta: { title: '商品分类管理' }
 	  },
+	  // --- 新增：公司信息管理 ---
+	  {
+	    path: 'company',
+	    name: 'Gongsixinxi',
+	    component: () => import('@/views/business/Gongsixinxi.vue'),
+	    meta: { title: '公司信息管理' }
+	  },
 	  {
 	      path: 'profile',
 	      name: 'Profile',

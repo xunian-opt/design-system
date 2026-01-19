@@ -1,12 +1,7 @@
 <template>
   <div class="app-container">
-   <!-- <el-breadcrumb separator="/" class="breadcrumb">
-      <el-breadcrumb-item>业务管理</el-breadcrumb-item>
-      <el-breadcrumb-item>商品分类管理</el-breadcrumb-item>
-    </el-breadcrumb> -->
-
-    <el-card>
-      <el-form :inline="true" :model="queryParams" class="search-form">
+    <el-card class="search-card" shadow="never">
+      <el-form :inline="true" :model="queryParams" class="search-form" size="small">
         <el-form-item label="分类名称">
           <el-input v-model="queryParams.shangpinfenlei" placeholder="请输入分类名称" clearable @clear="handleSearch"></el-input>
         </el-form-item>
@@ -15,10 +10,12 @@
           <el-button icon="el-icon-refresh" @click="resetSearch">重置</el-button>
         </el-form-item>
       </el-form>
+    </el-card>
 
+    <el-card class="table-card" shadow="never">
       <div class="toolbar">
-        <el-button type="primary" icon="el-icon-plus" @click="handleAdd">新增</el-button>
-        <el-button type="danger" icon="el-icon-delete" :disabled="selection.length === 0" @click="handleBatchDelete">批量删除</el-button>
+        <el-button type="primary" icon="el-icon-plus" size="small" @click="handleAdd">新增</el-button>
+        <el-button type="danger" icon="el-icon-delete" size="small" :disabled="selection.length === 0" @click="handleBatchDelete">批量删除</el-button>
       </div>
 
       <el-table 
@@ -27,6 +24,7 @@
         border 
         style="width: 100%" 
         @selection-change="handleSelectionChange"
+        size="medium"
       >
         <el-table-column type="selection" width="55" align="center"></el-table-column>
         <el-table-column type="index" label="索引" width="80" align="center">
@@ -35,17 +33,17 @@
           </template>
         </el-table-column>
         <el-table-column prop="shangpinfenlei" label="分类名称" align="center"></el-table-column>
-        <el-table-column label="操作" width="250" align="center">
+        <el-table-column label="操作" width="250" align="center" fixed="right">
           <template slot-scope="scope">
-            <el-button size="mini" type="success" @click="handleDetail(scope.row)">详情</el-button>
-            <el-button size="mini" type="primary" @click="handleEdit(scope.row)">修改</el-button>
-            <el-button size="mini" type="danger" @click="handleDelete(scope.row.id)">删除</el-button>
+            <el-button size="mini" type="text" icon="el-icon-view" @click="handleDetail(scope.row)">详情</el-button>
+            <el-button size="mini" type="text" icon="el-icon-edit" class="blue-text" @click="handleEdit(scope.row)">修改</el-button>
+            <el-button size="mini" type="text" icon="el-icon-delete" class="red-text" @click="handleDelete(scope.row.id)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
 
       <el-pagination
-        style="margin-top: 20px; text-align: center;"
+        style="margin-top: 20px; text-align: right;"
         @size-change="val => { pagination.limit = val; fetchData(); }"
         @current-change="val => { pagination.page = val; fetchData(); }"
         :current-page="pagination.page"
@@ -56,15 +54,15 @@
       </el-pagination>
     </el-card>
 
-    <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="500px" @close="resetForm">
-      <el-form :model="form" :rules="rules" ref="form" label-width="100px" :disabled="mode === 'view'">
+    <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="500px" @close="resetForm" :close-on-click-modal="false">
+      <el-form :model="form" :rules="rules" ref="form" label-width="100px" :disabled="mode === 'view'" size="small">
         <el-form-item label="分类名称" prop="shangpinfenlei">
           <el-input v-model="form.shangpinfenlei" placeholder="请输入分类名称"></el-input>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer" v-if="mode !== 'view'">
-        <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button @click="dialogVisible = false" size="small">取 消</el-button>
+        <el-button type="primary" @click="submitForm" size="small">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -89,7 +87,7 @@ export default {
         shangpinfenlei: ''
       },
       dialogVisible: false,
-      mode: 'add', // add, edit, view
+      mode: 'add',
       form: {
         id: undefined,
         shangpinfenlei: ''
@@ -109,10 +107,8 @@ export default {
     this.fetchData()
   },
   methods: {
-    // 获取列表
     fetchData() {
       this.loading = true
-      // 过滤空参数
       const params = {
         page: this.pagination.page,
         limit: this.pagination.limit
@@ -140,7 +136,6 @@ export default {
     handleSelectionChange(val) {
       this.selection = val
     },
-    // 初始化表单
     initForm(row, mode) {
       this.mode = mode
       this.dialogVisible = true
@@ -149,6 +144,11 @@ export default {
       } else {
         this.form = { ...row }
       }
+      this.$nextTick(() => {
+        if (this.$refs.form && mode !== 'view') {
+           this.$refs.form.clearValidate();
+        }
+      })
     },
     handleAdd() {
       this.initForm(null, 'add')
@@ -159,7 +159,6 @@ export default {
     handleDetail(row) {
       this.initForm(row, 'view')
     },
-    // 提交保存
     submitForm() {
       this.$refs.form.validate(valid => {
         if (valid) {
@@ -177,23 +176,17 @@ export default {
         this.$refs.form.resetFields()
       }
     },
-    // 删除
     handleDelete(id) {
-      this.$confirm('确认删除该分类?', '提示', {
-        type: 'warning'
-      }).then(() => {
+      this.$confirm('确认删除该分类?', '提示', { type: 'warning' }).then(() => {
         request.post('/shangpinfenlei/delete', [id]).then(() => {
           this.$message.success('删除成功')
           this.fetchData()
         })
       })
     },
-    // 批量删除
     handleBatchDelete() {
       const ids = this.selection.map(item => item.id)
-      this.$confirm(`确认删除选中的 ${ids.length} 个分类?`, '提示', {
-        type: 'warning'
-      }).then(() => {
+      this.$confirm(`确认删除选中的 ${ids.length} 个分类?`, '提示', { type: 'warning' }).then(() => {
         request.post('/shangpinfenlei/delete', ids).then(() => {
           this.$message.success('批量删除成功')
           this.fetchData()
@@ -205,7 +198,27 @@ export default {
 </script>
 
 <style scoped>
-.breadcrumb { margin-bottom: 20px; }
-.toolbar { margin-bottom: 20px; }
-.search-form { margin-bottom: 10px; }
+.app-container {
+  padding: 10px;
+  background-color: #f0f2f5;
+  min-height: calc(100vh - 84px);
+}
+.search-card {
+  margin-bottom: 10px; 
+  border-radius: 4px;
+  border: none;
+}
+.search-form .el-form-item {
+  margin-bottom: 0;
+  margin-right: 15px;
+}
+.table-card {
+  border-radius: 4px;
+  border: none;
+  min-height: 500px;
+}
+.toolbar { margin-bottom: 15px; }
+.blue-text { color: #1890ff; }
+.red-text { color: #ff4d4f; }
+::v-deep .el-card__body { padding: 15px; }
 </style>

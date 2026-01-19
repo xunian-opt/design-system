@@ -1,12 +1,7 @@
 <template>
   <div class="app-container">
-    <!-- <el-breadcrumb separator="/" class="breadcrumb">
-      <el-breadcrumb-item>系统管理</el-breadcrumb-item>
-      <el-breadcrumb-item>用户管理</el-breadcrumb-item>
-    </el-breadcrumb> -->
-
-    <el-card>
-      <el-form :inline="true" :model="queryParams" class="demo-form-inline">
+    <el-card class="search-card" shadow="never">
+      <el-form :inline="true" :model="queryParams" class="search-form" size="small">
         <el-form-item label="用户名">
           <el-input v-model="queryParams.username" placeholder="请输入用户名" clearable @clear="fetchData"></el-input>
         </el-form-item>
@@ -18,18 +13,21 @@
           <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
         </el-form-item>
       </el-form>
+    </el-card>
 
+    <el-card class="table-card" shadow="never">
       <div class="toolbar">
-        <el-button type="primary" icon="el-icon-plus" @click="handleAdd">新增</el-button>
-        <el-button type="danger" icon="el-icon-delete" :disabled="selection.length === 0" @click="handleBatchDelete">批量删除</el-button>
+        <el-button type="primary" icon="el-icon-plus" size="small" @click="handleAdd">新增</el-button>
+        <el-button type="danger" icon="el-icon-delete" size="small" :disabled="selection.length === 0" @click="handleBatchDelete">批量删除</el-button>
       </div>
 
       <el-table
         v-loading="loading"
         :data="tableData"
         border
-        style="width: 100%; margin-top: 20px"
+        style="width: 100%"
         @selection-change="handleSelectionChange"
+        size="medium"
       >
         <el-table-column type="selection" width="55" align="center"></el-table-column>
         <el-table-column type="index" label="索引" width="80" align="center">
@@ -40,21 +38,21 @@
         <el-table-column prop="username" label="用户名" align="center"></el-table-column>
         <el-table-column prop="role" label="角色" align="center">
           <template slot-scope="scope">
-            <el-tag size="small">{{ scope.row.role }}</el-tag>
+            <el-tag size="mini">{{ scope.row.role }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="mobile" label="手机" align="center"></el-table-column>
-        <el-table-column label="操作" width="300" align="center">
+        <el-table-column label="操作" width="300" align="center" fixed="right">
           <template slot-scope="scope">
-            <el-button size="mini" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row)">修改</el-button>
-            <el-button size="mini" type="danger" icon="el-icon-delete" @click="handleDelete(scope.row)">删除</el-button>
-            <el-button size="mini" type="warning" icon="el-icon-key" @click="handleResetPwd(scope.row)">重置密码</el-button>
+            <el-button size="mini" type="text" icon="el-icon-edit" class="blue-text" @click="handleEdit(scope.row)">修改</el-button>
+            <el-button size="mini" type="text" icon="el-icon-key" class="warning-text" @click="handleResetPwd(scope.row)">重置密码</el-button>
+            <el-button size="mini" type="text" icon="el-icon-delete" class="red-text" @click="handleDelete(scope.row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
 
       <el-pagination
-        style="margin-top: 20px; text-align: center;"
+        style="margin-top: 20px; text-align: right;"
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
         :current-page="pagination.page"
@@ -65,8 +63,8 @@
       </el-pagination>
     </el-card>
 
-    <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="500px" @close="resetDialog">
-      <el-form :model="form" :rules="rules" ref="dataForm" label-width="80px">
+    <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="500px" @close="resetDialog" :close-on-click-modal="false">
+      <el-form :model="form" :rules="rules" ref="dataForm" label-width="80px" size="small">
         <el-form-item label="用户名" prop="username">
           <el-input v-model="form.username" placeholder="请输入用户名" :disabled="isEdit"></el-input>
         </el-form-item>
@@ -83,8 +81,8 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button @click="dialogVisible = false" size="small">取 消</el-button>
+        <el-button type="primary" @click="submitForm" size="small">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -201,7 +199,6 @@ export default {
       this.$refs.dataForm.validate(valid => {
         if (valid) {
           const url = this.isEdit ? '/users/update' : '/users/save'
-          // 注意：save/update 在 Controller 中是 @RequestBody，axios 默认就是 JSON
           request.post(url, this.form).then(() => {
             this.$message.success(this.isEdit ? '修改成功' : '新增成功')
             this.dialogVisible = false
@@ -210,7 +207,6 @@ export default {
         }
       })
     },
-    // 单个删除
     handleDelete(row) {
       this.$confirm(`确认删除用户 "${row.username}" 吗?`, '警告', {
         type: 'warning'
@@ -219,9 +215,11 @@ export default {
           this.$message.success('删除成功')
           this.fetchData()
         })
+      }).catch(() => {
+        // 取消删除，不做任何操作
+        this.$message.info('已取消删除')
       })
     },
-    // 批量删除
     handleBatchDelete() {
       const ids = this.selection.map(item => item.id)
       this.$confirm(`确认删除选中的 ${ids.length} 个用户吗?`, '警告', {
@@ -231,9 +229,10 @@ export default {
           this.$message.success('删除成功')
           this.fetchData()
         })
+      }).catch(() => {
+        this.$message.info('已取消删除')
       })
     },
-    // 重置密码
     handleResetPwd(row) {
       this.$confirm(`确认重置用户 "${row.username}" 的密码为 123456 吗?`, '提示', {
         type: 'warning'
@@ -241,6 +240,8 @@ export default {
         request.get('/users/resetPass', { params: { username: row.username } }).then(res => {
           this.$message.success(res.msg || '重置成功')
         })
+      }).catch(() => {
+        this.$message.info('已取消重置')
       })
     },
     resetDialog() {
@@ -257,6 +258,29 @@ export default {
 </script>
 
 <style scoped>
-.breadcrumb { margin-bottom: 20px; }
-.toolbar { margin-bottom: 20px; }
+.app-container {
+  padding: 10px;
+  background-color: #f0f2f5;
+  min-height: calc(100vh - 84px);
+}
+.search-card {
+  margin-bottom: 10px; 
+  border-radius: 4px;
+  border: none;
+}
+.search-form .el-form-item {
+  margin-bottom: 0;
+  margin-right: 15px;
+}
+.table-card {
+  border-radius: 4px;
+  border: none;
+  min-height: 500px;
+}
+.toolbar { margin-bottom: 15px; }
+.blue-text { color: #1890ff; }
+.red-text { color: #ff4d4f; }
+.warning-text { color: #e6a23c; } /* 增加橙色用于重置密码 */
+
+::v-deep .el-card__body { padding: 15px; }
 </style>

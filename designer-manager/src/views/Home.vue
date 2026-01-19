@@ -20,6 +20,22 @@
       </el-card>
     </div>
 
+    <div class="charts-grid">
+      <el-card shadow="never" class="chart-card">
+        <div slot="header">
+          <span>商品分类统计</span>
+        </div>
+        <div id="categoryChart" style="width: 100%; height: 400px;"></div>
+      </el-card>
+
+      <el-card shadow="never" class="chart-card">
+        <div slot="header">
+          <span>商品品牌分布</span>
+        </div>
+        <div id="brandChart" style="width: 100%; height: 400px;"></div>
+      </el-card>
+    </div>
+
     <el-card class="welcome-card" shadow="never">
       <div class="welcome-content">
         <img src="https://img.icons8.com/clouds/200/000000/company.png" alt="Welcome" class="welcome-img">
@@ -31,48 +47,146 @@
 </template>
 
 <script>
+import * as echarts from 'echarts'
+import request from '@/utils/request'
+
 export default {
   name: 'Home',
   data() {
     return {
       currentDate: '',
-      // 模拟统计数据，后续可对接后端 API
       stats: [
-        { 
-          title: '总用户数', 
-          value: '1,203', 
-          icon: 'el-icon-s-custom', 
-          color: '#1890ff' // 蓝色
-        },
-        { 
-          title: '本月订单', 
-          value: '58', 
-          icon: 'el-icon-s-order', 
-          color: '#52c41a' // 绿色
-        },
-        { 
-          title: '商品库存', 
-          value: '8,540', 
-          icon: 'el-icon-s-goods', 
-          color: '#faad14' // 橙色
-        },
-        { 
-          title: '总交易额', 
-          value: '¥ 320,000', 
-          icon: 'el-icon-money', 
-          color: '#f5222d' // 红色
-        }
-      ]
+        { title: '总用户数', value: '1,203', icon: 'el-icon-s-custom', color: '#1890ff' },
+        { title: '本月订单', value: '58', icon: 'el-icon-s-order', color: '#52c41a' },
+        { title: '商品库存', value: '8,540', icon: 'el-icon-s-goods', color: '#faad14' },
+        { title: '总交易额', value: '¥ 320,000', icon: 'el-icon-money', color: '#f5222d' }
+      ],
+      categoryChart: null,
+      brandChart: null
     }
   },
   created() {
     this.initDate();
+  },
+  mounted() {
+    this.initCharts();
+    window.addEventListener('resize', this.handleResize);
+  },
+  beforeDestroy() {
+    window.removeEventListener('resize', this.handleResize);
+    if (this.categoryChart) this.categoryChart.dispose();
+    if (this.brandChart) this.brandChart.dispose();
   },
   methods: {
     initDate() {
       const now = new Date();
       const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
       this.currentDate = now.toLocaleDateString('zh-CN', options);
+    },
+    
+    initCharts() {
+      this.initCategoryChart();
+      this.initBrandChart();
+    },
+
+    // 1. 商品分类统计 (饼图)
+    initCategoryChart() {
+      request.get('/zhuangxiushangpin/group/shangpinfenlei').then(res => {
+        if (res && res.code === 0 && res.data) {
+          // 后端返回的数据格式通常为 [{shangpinfenlei: 'xx', total: 10}, ...]
+          // 我们需要将其转换为 Echarts 需要的 {name: 'xx', value: 10}
+          const data = res.data.map(item => ({
+            name: item.shangpinfenlei,
+            value: item.total
+          }));
+
+          const dom = document.getElementById('categoryChart');
+          this.categoryChart = echarts.init(dom);
+          
+          const option = {
+            tooltip: {
+              trigger: 'item',
+              formatter: '{a} <br/>{b} : {c} ({d}%)'
+            },
+            legend: {
+              orient: 'vertical',
+              left: 'left'
+            },
+            series: [
+              {
+                name: '商品分类',
+                type: 'pie',
+                radius: '50%',
+                data: data,
+                emphasis: {
+                  itemStyle: {
+                    shadowBlur: 10,
+                    shadowOffsetX: 0,
+                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                  }
+                }
+              }
+            ]
+          };
+          this.categoryChart.setOption(option);
+        }
+      });
+    },
+
+    // 2. 商品品牌分布 (柱状图) - 作为库存构成统计
+    initBrandChart() {
+      request.get('/zhuangxiushangpin/group/shangpinpinpai').then(res => {
+        if (res && res.code === 0 && res.data) {
+          const xData = res.data.map(item => item.shangpinpinpai);
+          const yData = res.data.map(item => item.total);
+
+          const dom = document.getElementById('brandChart');
+          this.brandChart = echarts.init(dom);
+
+          const option = {
+            tooltip: {
+              trigger: 'axis',
+              axisPointer: { type: 'shadow' }
+            },
+            grid: {
+              left: '3%',
+              right: '4%',
+              bottom: '3%',
+              containLabel: true
+            },
+            xAxis: [
+              {
+                type: 'category',
+                data: xData,
+                axisTick: { alignWithLabel: true },
+                axisLabel: { interval: 0, rotate: 30 } // 防止标签重叠
+              }
+            ],
+            yAxis: [
+              {
+                type: 'value'
+              }
+            ],
+            series: [
+              {
+                name: '商品数量',
+                type: 'bar',
+                barWidth: '60%',
+                data: yData,
+                itemStyle: {
+                  color: '#409EFF'
+                }
+              }
+            ]
+          };
+          this.brandChart.setOption(option);
+        }
+      });
+    },
+
+    handleResize() {
+      if (this.categoryChart) this.categoryChart.resize();
+      if (this.brandChart) this.brandChart.resize();
     }
   }
 }
@@ -81,14 +195,44 @@ export default {
 <style scoped>
 .home-container {
   padding: 10px;
+  background-color: #f0f2f5;
+  min-height: 100vh;
 }
 
-/* 使用 CSS Grid 实现响应式布局 */
+/* 统计卡片网格 */
 .dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 24px;
-  margin-bottom: 24px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+/* 图表网格 */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+/* 响应式调整 */
+@media (max-width: 1200px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .charts-grid {
+    grid-template-columns: 1fr; /* 小屏幕下图表垂直排列 */
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stat-card, .chart-card, .welcome-card {
+  border-radius: 4px;
 }
 
 .stat-content {
@@ -106,13 +250,13 @@ export default {
   justify-content: center;
   font-size: 28px;
   color: white;
-  flex-shrink: 0; /* 防止图标被压缩 */
+  flex-shrink: 0;
 }
 
 .stat-info h3 {
   margin: 0;
   font-size: 14px;
-  color: #909399; /* Element UI 辅助文字颜色 */
+  color: #909399;
   font-weight: normal;
 }
 
@@ -120,16 +264,17 @@ export default {
   margin: 8px 0 0;
   font-size: 24px;
   font-weight: bold;
-  color: #303133; /* Element UI 主要文字颜色 */
+  color: #303133;
 }
 
-/* 欢迎卡片样式 */
+/* 欢迎卡片 */
 .welcome-card {
-  min-height: 400px;
+  min-height: 300px;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
+  margin-top: 20px;
 }
 
 .welcome-content {
@@ -147,7 +292,7 @@ export default {
 }
 
 .welcome-card h2 {
-  color: #409EFF; /* Element UI 主题蓝 */
+  color: #409EFF;
   margin-bottom: 15px;
   font-weight: 600;
 }

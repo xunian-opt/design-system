@@ -1,8 +1,8 @@
 <template>
   <div class="app-container">
-    <el-card>
+    <el-card class="table-card" shadow="never">
       <div class="toolbar">
-        <el-button type="primary" icon="el-icon-plus" @click="handleAdd">新增菜单</el-button>
+        <el-button type="primary" icon="el-icon-plus" size="small" @click="handleAdd">新增菜单</el-button>
       </div>
 
       <el-table
@@ -12,6 +12,7 @@
         border
         default-expand-all
         :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
+        size="medium"
       >
         <el-table-column prop="title" label="菜单名称" min-width="150"></el-table-column>
         <el-table-column prop="icon" label="图标" align="center" width="80">
@@ -22,18 +23,18 @@
         <el-table-column prop="path" label="路由路径" align="center"></el-table-column>
         <el-table-column prop="perms" label="权限标识" align="center"></el-table-column>
         <el-table-column prop="orderNum" label="排序" align="center" width="80"></el-table-column>
-        <el-table-column label="操作" width="200" align="center">
+        <el-table-column label="操作" width="220" align="center" fixed="right">
           <template slot-scope="scope">
-            <el-button size="mini" type="text" @click="handleEdit(scope.row)">修改</el-button>
-            <el-button size="mini" type="text" @click="handleAdd(scope.row)">新增下级</el-button>
-            <el-button size="mini" type="text" class="text-danger" @click="handleDelete(scope.row)">删除</el-button>
+            <el-button size="mini" type="text" icon="el-icon-edit" class="blue-text" @click="handleEdit(scope.row)">修改</el-button>
+            <el-button size="mini" type="text" icon="el-icon-plus" class="blue-text" @click="handleAdd(scope.row)">新增下级</el-button>
+            <el-button size="mini" type="text" icon="el-icon-delete" class="red-text" @click="handleDelete(scope.row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
     </el-card>
 
-    <el-dialog :title="title" :visible.sync="open" width="600px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="100px">
+    <el-dialog :title="title" :visible.sync="open" width="600px" append-to-body :close-on-click-modal="false">
+      <el-form ref="form" :model="form" :rules="rules" label-width="100px" size="small">
         <el-form-item label="上级菜单">
            <el-cascader
             v-model="form.parentId"
@@ -60,8 +61,8 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="open = false">取 消</el-button>
+        <el-button @click="open = false" size="small">取 消</el-button>
+        <el-button type="primary" @click="submitForm" size="small">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -74,10 +75,11 @@ const mockMenuData = [
   
   // 原业务管理下的子菜单，现在提升为一级
   { id: 21, title: '设计师信息管理', path: '/employees', icon: 'el-icon-user', orderNum: 2 },
-  { id: 22, title: '商品分类管理', path: '/category', icon: 'el-icon-menu', orderNum: 3 },
-  { id: 23, title: '装修商品管理', path: '/product', icon: 'el-icon-goods', orderNum: 4 },
-  { id: 24, title: '装修作品管理', path: '/work', icon: 'el-icon-picture-outline', orderNum: 5 },
-  { id: 25, title: '订单管理', path: '/order', icon: 'el-icon-document', orderNum: 6 },
+  { id: 22, title: '公司信息管理', path: '/company', icon: 'el-icon-office-building', orderNum: 6.5 },
+  { id: 23, title: '商品分类管理', path: '/category', icon: 'el-icon-menu', orderNum: 3 },
+  { id: 24, title: '装修商品管理', path: '/product', icon: 'el-icon-goods', orderNum: 4 },
+  { id: 25, title: '装修作品管理', path: '/work', icon: 'el-icon-picture-outline', orderNum: 5 },
+  { id: 26, title: '订单管理', path: '/order', icon: 'el-icon-document', orderNum: 6 },
 
   // 系统管理保持层级
   {
@@ -163,6 +165,19 @@ export default {
 };
 </script>
 <style scoped>
+.app-container {
+  padding: 10px;
+  background-color: #f0f2f5;
+  min-height: calc(100vh - 84px);
+}
+.table-card {
+  border-radius: 4px;
+  border: none;
+  min-height: 500px;
+}
 .toolbar { margin-bottom: 20px; }
-.text-danger { color: #f56c6c; }
+.blue-text { color: #1890ff; }
+.red-text { color: #ff4d4f; }
+
+::v-deep .el-card__body { padding: 15px; }
 </style>

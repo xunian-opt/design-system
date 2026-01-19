@@ -1,27 +1,24 @@
 <template>
   <div class="app-container">
-    <!-- <el-breadcrumb separator="/" class="breadcrumb">
-      <el-breadcrumb-item>系统管理</el-breadcrumb-item>
-      <el-breadcrumb-item>轮播图管理</el-breadcrumb-item>
-    </el-breadcrumb> -->
-
-    <el-card>
-      <el-form :inline="true" :model="queryParams">
+    <el-card class="search-card" shadow="never">
+      <el-form :inline="true" :model="queryParams" class="search-form" size="small">
         <el-form-item label="名称">
           <el-input v-model="queryParams.name" placeholder="请输入名称" clearable @clear="handleSearch"></el-input>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSearch">查询</el-button>
-          <el-button @click="resetSearch">重置</el-button>
+          <el-button type="primary" icon="el-icon-search" @click="handleSearch">查询</el-button>
+          <el-button icon="el-icon-refresh" @click="resetSearch">重置</el-button>
         </el-form-item>
       </el-form>
+    </el-card>
 
+    <el-card class="table-card" shadow="never">
       <div class="toolbar">
-        <el-button type="primary" icon="el-icon-plus" @click="handleAdd">新增</el-button>
-        <el-button type="danger" icon="el-icon-delete" :disabled="selection.length === 0" @click="handleBatchDelete">批量删除</el-button>
+        <el-button type="primary" icon="el-icon-plus" size="small" @click="handleAdd">新增</el-button>
+        <el-button type="danger" icon="el-icon-delete" size="small" :disabled="selection.length === 0" @click="handleBatchDelete">批量删除</el-button>
       </div>
 
-      <el-table v-loading="loading" :data="tableData" border @selection-change="handleSelectionChange">
+      <el-table v-loading="loading" :data="tableData" border @selection-change="handleSelectionChange" size="medium">
         <el-table-column type="selection" width="55" align="center"></el-table-column>
         <el-table-column type="index" label="索引" width="80" align="center">
            <template slot-scope="scope">{{ (pagination.page - 1) * pagination.limit + scope.$index + 1 }}</template>
@@ -31,24 +28,25 @@
           <template slot-scope="scope">
              <el-image 
               v-if="scope.row.value"
-              style="width: 120px; height: 60px" 
+              style="width: 100px; height: 50px; border-radius: 4px;" 
               :src="scope.row.value"
-              :preview-src-list="[scope.row.value]">
+              :preview-src-list="[scope.row.value]"
+              fit="cover">
             </el-image>
-            <span v-else>无图</span>
+            <span v-else style="color:#c0c4cc; font-size: 12px">无图</span>
           </template>
         </el-table-column>
-        <el-table-column prop="value" label="图片地址/值" show-overflow-tooltip></el-table-column>
-        <el-table-column label="操作" width="180" align="center">
+        <el-table-column prop="value" label="图片地址" show-overflow-tooltip></el-table-column>
+        <el-table-column label="操作" width="180" align="center" fixed="right">
           <template slot-scope="scope">
-            <el-button size="mini" type="primary" @click="handleEdit(scope.row)">修改</el-button>
-            <el-button size="mini" type="danger" @click="handleDelete(scope.row.id)">删除</el-button>
+            <el-button size="mini" type="text" icon="el-icon-edit" class="blue-text" @click="handleEdit(scope.row)">修改</el-button>
+            <el-button size="mini" type="text" icon="el-icon-delete" class="red-text" @click="handleDelete(scope.row.id)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
 
       <el-pagination
-        style="margin-top: 20px; text-align: center;"
+        style="margin-top: 20px; text-align: right;"
         @size-change="val => { pagination.limit = val; fetchData(); }"
         @current-change="val => { pagination.page = val; fetchData(); }"
         :current-page="pagination.page"
@@ -59,8 +57,8 @@
       </el-pagination>
     </el-card>
 
-    <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="500px">
-      <el-form :model="form" :rules="rules" ref="form" label-width="100px">
+    <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="500px" :close-on-click-modal="false">
+      <el-form :model="form" :rules="rules" ref="form" label-width="100px" size="small">
         <el-form-item label="名称" prop="name">
           <el-input v-model="form.name"></el-input>
         </el-form-item>
@@ -72,8 +70,8 @@
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button @click="dialogVisible = false" size="small">取 消</el-button>
+        <el-button type="primary" @click="submitForm" size="small">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -160,3 +158,29 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.app-container {
+  padding: 10px;
+  background-color: #f0f2f5;
+  min-height: calc(100vh - 84px);
+}
+.search-card {
+  margin-bottom: 10px; 
+  border-radius: 4px;
+  border: none;
+}
+.search-form .el-form-item {
+  margin-bottom: 0;
+  margin-right: 15px;
+}
+.table-card {
+  border-radius: 4px;
+  border: none;
+  min-height: 500px;
+}
+.toolbar { margin-bottom: 15px; }
+.blue-text { color: #1890ff; }
+.red-text { color: #ff4d4f; }
+::v-deep .el-card__body { padding: 15px; }
+</style>
