@@ -18,7 +18,7 @@ export const mockMenuData = [
       { id: 31, parentId: 3, title: '用户管理', path: '/sys/users', orderNum: 1 },
       { id: 32, parentId: 3, title: '角色管理', path: '/sys/roles', orderNum: 2 },
       { id: 33, parentId: 3, title: '菜单管理', path: '/sys/menus', orderNum: 3 },
-	  { id: 34, parentId: 3, title: '轮播图管理', path: '/sys/system', orderNum: 4 },
+	  { id: 34, parentId: 3, title: '轮播图管理', path: '/sys/carousel', orderNum: 4 },
     ]
   },
   { id: 4, title: '个人中心', path: '/profile', icon: 'el-icon-user-solid', orderNum: 8 }

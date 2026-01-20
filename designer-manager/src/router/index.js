@@ -100,9 +100,9 @@ const routes = [
         meta: { title: '角色管理' }
       },
       {
-        path: 'system', // 对应 system.html (轮播图配置)
-        name: 'System',
-        component: () => import('@/views/sys/System.vue'),
+        path: 'carousel', // 对应 system.html (轮播图配置)
+        name: 'carousel',
+        component: () => import('@/views/sys/carousel.vue'),
         meta: { title: '轮播图管理' }
       },
 	  {
@@ -140,11 +140,21 @@ const router = new VueRouter({
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
   
-  // 如果没有 token 且访问的不是登录页，则强制跳转登录
-  if (!token && to.path !== '/login') {
-    next('/login')
+  if (to.path === '/login') {
+    // 如果已登录，访问登录页直接跳首页
+    if (token) {
+      next({ path: '/' })
+    } else {
+      next()
+    }
   } else {
-    next()
+    // 访问非登录页
+    if (!token) {
+      // 无 token，强制跳转登录页，并记录重定向地址
+      next(`/login?redirect=${to.path}`)
+    } else {
+      next()
+    }
   }
 })
 
